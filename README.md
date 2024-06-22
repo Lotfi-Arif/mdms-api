@@ -1,73 +1,52 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# PostgreSQL Docker Setup
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+This README provides instructions on setting up a PostgreSQL database using Docker and Docker Compose.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Prerequisites
 
-## Description
+Before you can run the PostgreSQL container, you need to install Docker.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Installing Docker
 
-## Installation
+- **For Mac**: Visit [Docker for Mac](https://docs.docker.com/desktop/mac/install/) and follow the instructions to download and install Docker Desktop for Mac.
+- **For Windows**: Visit [Docker for Windows](https://docs.docker.com/desktop/windows/install/) and follow the instructions to download and install Docker Desktop for Windows.
 
-```bash
-$ yarn install
-```
+## Running the PostgreSQL Container
 
-## Running the app
+Once Docker is installed, you can use Docker Compose to manage your PostgreSQL container.
 
-```bash
-# development
-$ yarn run start
+1. **Start the container**:
+   Navigate to the directory containing your `docker-compose.yml` file and run the following command:
 
-# watch mode
-$ yarn run start:dev
+   ```bash
+   docker-compose up -d
+   ```
 
-# production mode
-$ yarn run start:prod
-```
+2. **Stop the container**:
+   When you're done and want to stop the container, use:
+   ```bash
+   docker-compose down
+   ```
 
-## Test
+## Accessing the Database
 
-```bash
-# unit tests
-$ yarn run test
+You can access the PostgreSQL database in several ways:
 
-# e2e tests
-$ yarn run test:e2e
+### Using `psql` Command Line Tool
 
-# test coverage
-$ yarn run test:cov
-```
+1. **Accessing through Docker Exec**:
+   If you have `psql` installed on your host machine, you can connect to your database by running:
 
-## Support
+   ```bash
+   docker exec -it mdms-postgres psql -U postgres -d development
+   ```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+2. **Using a GUI Tool**:
+   You can also use GUI tools like PGAdmin or DBeaver. Configure your connection with the following settings:
+   - **Host**: `localhost`
+   - **Port**: `5432`
+   - **User**: `postgres`
+   - **Password**: `postgres`
+   - **Database**: `development`
 
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
+Remember to replace `development` with the name of any other database you create and want to connect to.

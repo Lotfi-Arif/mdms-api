@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String?
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Specific user roles
+  student    Student?
+  supervisor Supervisor?
+  examiner   Examiner?
+}
+
+// Student-specific data
+model Student {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id])
+  submissions Submission[]
+  vivas       Viva[] // Many-to-many relation with Viva
+  nominations Nomination[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// Supervisor-specific data
+model Supervisor {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id])
+  nominations Nomination[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+// Examiner-specific data
+model Examiner {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id])
+  vivas       Viva[]       @relation("vivasParticipated")
+  nominations Nomination[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Submission {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Viva {
+  id        String     @id @default(uuid())
+  topic     String
+  studentId String
+  student   Student    @relation(fields: [studentId], references: [id])
+  examiners Examiner[] @relation("vivasParticipated") // Many-to-many relation with Examiner
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Nomination {
+  id           String     @id @default(uuid())
+  details      String
+  studentId    String
+  supervisorId String
+  examinerId   String
+  student      Student    @relation(fields: [studentId], references: [id])
+  supervisor   Supervisor @relation(fields: [supervisorId], references: [id])
+  examiner     Examiner   @relation(fields: [examinerId], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+}
