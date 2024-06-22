@@ -9,9 +9,10 @@ import { ExaminersModule } from './examiners/examiners.module';
 import { ProjectsModule } from './projects/projects.module';
 import { SubmissionsModule } from './submissions/submissions.module';
 import { NominationsModule } from './nominations/nominations.module';
+import { VivasModule } from './vivas/vivas.module';
 
 @Module({
-  imports: [UsersModule, StudentsModule, SupervisorsModule, ExaminersModule, ProjectsModule, SubmissionsModule, NominationsModule],
+  imports: [UsersModule, StudentsModule, SupervisorsModule, ExaminersModule, ProjectsModule, SubmissionsModule, NominationsModule, VivasModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
