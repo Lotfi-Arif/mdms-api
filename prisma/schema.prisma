@@ -23,14 +23,16 @@ model User {
 
 // Student-specific data
 model Student {
-  id          String       @id @default(uuid())
-  userId      String       @unique
-  user        User         @relation(fields: [userId], references: [id])
-  submissions Submission[]
-  project     Project?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-  Viva        Viva?
+  id           String       @id @default(uuid())
+  userId       String       @unique
+  user         User         @relation(fields: [userId], references: [id])
+  submissions  Submission[]
+  supervisor   Supervisor?  @relation(fields: [supervisorId], references: [id])
+  project      Project?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  Viva         Viva?
+  supervisorId String?
 }
 
 // Supervisor-specific data
@@ -38,6 +40,7 @@ model Supervisor {
   id          String       @id @default(uuid())
   userId      String       @unique
   user        User         @relation(fields: [userId], references: [id])
+  students    Student[]
   nominations Nomination[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt

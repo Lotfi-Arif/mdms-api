@@ -8,7 +8,15 @@ import {
   Delete,
 } from '@nestjs/common';
 import { SupervisorsService } from './supervisors.service';
-import { Supervisor, Prisma } from '@prisma/client';
+import {
+  Supervisor,
+  Submission,
+  User,
+  Viva,
+  Nomination,
+  Prisma,
+  Project,
+} from '@prisma/client';
 
 @Controller('supervisors')
 export class SupervisorsController {
@@ -42,5 +50,46 @@ export class SupervisorsController {
   @Delete(':id')
   remove(@Param('id') id: string): Promise<Supervisor> {
     return this.supervisorsService.deleteSupervisor(id);
+  }
+
+  @Get(':id/student-progress')
+  getStudentProgress(
+    @Param('id') supervisorId: string,
+  ): Promise<{ studentId: string; progress: number }[]> {
+    return this.supervisorsService.getStudentProgressBar(supervisorId);
+  }
+
+  @Get(':id/submissions')
+  getSubmissions(@Param('id') supervisorId: string): Promise<Submission[]> {
+    return this.supervisorsService.getSubmissions(supervisorId);
+  }
+
+  @Post(':id/nominate')
+  nominateExaminer(
+    @Param('id') supervisorId: string,
+    @Body() nominationData: { examinerId: string; details: string },
+  ): Promise<Nomination> {
+    return this.supervisorsService.nominateExaminer(
+      supervisorId,
+      nominationData.examinerId,
+      nominationData.details,
+    );
+  }
+
+  @Get('lecturers')
+  getLecturerList(): Promise<User[]> {
+    return this.supervisorsService.getLecturerList();
+  }
+
+  @Get(':supervisorId/projects/archive')
+  getProjectArchive(
+    @Param('supervisorId') supervisorId: string,
+  ): Promise<Project[]> {
+    return this.supervisorsService.getProjectArchive(supervisorId);
+  }
+
+  @Get(':id/vivas')
+  getVivaDetails(@Param('id') supervisorId: string): Promise<Viva[]> {
+    return this.supervisorsService.getAssignedVivas(supervisorId);
   }
 }
