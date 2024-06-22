@@ -7,9 +7,10 @@ import { StudentsModule } from './students/students.module';
 import { SupervisorsModule } from './supervisors/supervisors.module';
 import { ExaminersModule } from './examiners/examiners.module';
 import { ProjectsModule } from './projects/projects.module';
+import { SubmissionsModule } from './submissions/submissions.module';
 
 @Module({
-  imports: [UsersModule, StudentsModule, SupervisorsModule, ExaminersModule, ProjectsModule],
+  imports: [UsersModule, StudentsModule, SupervisorsModule, ExaminersModule, ProjectsModule, SubmissionsModule],
   controllers: [AppController],
   providers: [AppService, PrismaService],
 })
