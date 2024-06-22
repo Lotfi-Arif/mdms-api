@@ -27,10 +27,10 @@ model Student {
   userId      String       @unique
   user        User         @relation(fields: [userId], references: [id])
   submissions Submission[]
-  vivas       Viva[] // Many-to-many relation with Viva
-  nominations Nomination[]
+  project     Project?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  Viva        Viva?
 }
 
 // Supervisor-specific data
@@ -67,22 +67,32 @@ model Submission {
 model Viva {
   id        String     @id @default(uuid())
   topic     String
-  studentId String
+  studentId String     @unique
   student   Student    @relation(fields: [studentId], references: [id])
-  examiners Examiner[] @relation("vivasParticipated") // Many-to-many relation with Examiner
+  examiners Examiner[] @relation("vivasParticipated")
+  project   Project?
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
+}
+
+model Project {
+  id        String   @id @default(uuid())
+  title     String
+  studentId String   @unique
+  student   Student  @relation(fields: [studentId], references: [id])
+  vivaId    String   @unique
+  viva      Viva     @relation(fields: [vivaId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Nomination {
   id           String     @id @default(uuid())
   details      String
-  studentId    String
   supervisorId String
   examinerId   String
-  student      Student    @relation(fields: [studentId], references: [id])
   supervisor   Supervisor @relation(fields: [supervisorId], references: [id])
   examiner     Examiner   @relation(fields: [examinerId], references: [id])
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  updatedAt    DateTime   @default(now())
 }
