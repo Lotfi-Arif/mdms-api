@@ -3,12 +3,19 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
+  Patch,
   Delete,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
-import { Student, Prisma } from '@prisma/client';
+import {
+  Student,
+  Submission,
+  User,
+  Project,
+  Viva,
+  Prisma,
+} from '@prisma/client';
 
 @Controller('students')
 export class StudentsController {
@@ -32,13 +39,45 @@ export class StudentsController {
   @Patch(':id')
   update(
     @Param('id') id: string,
-    @Body() updateData: Prisma.StudentUpdateInput,
+    @Body() studentData: Prisma.StudentUpdateInput,
   ): Promise<Student> {
-    return this.studentsService.updateStudent(id, updateData);
+    return this.studentsService.updateStudent(id, studentData);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string): Promise<Student> {
     return this.studentsService.deleteStudent(id);
+  }
+
+  @Get(':id/progress')
+  getStudentProgress(@Param('id') studentId: string): Promise<number> {
+    return this.studentsService.getStudentProgress(studentId);
+  }
+
+  @Post(':id/submissions')
+  createSubmission(
+    @Param('id') studentId: string,
+    @Body() submissionData: { title: string; content: string },
+  ): Promise<Submission> {
+    return this.studentsService.createSubmission(
+      studentId,
+      submissionData.title,
+      submissionData.content,
+    );
+  }
+
+  @Get('lecturers')
+  getLecturerList(): Promise<User[]> {
+    return this.studentsService.getLecturerList();
+  }
+
+  @Get('projects/archive')
+  getProjectArchive(): Promise<Project[]> {
+    return this.studentsService.getProjectArchive();
+  }
+
+  @Get(':id/viva')
+  getVivaDetails(@Param('id') studentId: string): Promise<Viva | null> {
+    return this.studentsService.getVivaDetails(studentId);
   }
 }
