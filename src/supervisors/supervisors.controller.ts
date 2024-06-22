@@ -11,11 +11,11 @@ import { SupervisorsService } from './supervisors.service';
 import {
   Supervisor,
   Submission,
-  User,
   Viva,
   Nomination,
   Prisma,
   Project,
+  Lecturer,
 } from '@prisma/client';
 
 @Controller('supervisors')
@@ -77,7 +77,7 @@ export class SupervisorsController {
   }
 
   @Get('lecturers')
-  getLecturerList(): Promise<User[]> {
+  getLecturerList(): Promise<Lecturer[]> {
     return this.supervisorsService.getLecturerList();
   }
 

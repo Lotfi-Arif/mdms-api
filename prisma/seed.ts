@@ -12,6 +12,7 @@ async function main() {
   await prisma.supervisor.deleteMany();
   await prisma.examiner.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.lecturer.deleteMany();
 
   // Create users
   const user1 = await prisma.user.create({
@@ -30,8 +31,12 @@ async function main() {
       email: 'supervisor@example.com',
       name: 'Supervisor User',
       password: 'password123',
-      supervisor: {
-        create: {},
+      lecturer: {
+        create: {
+          examiner: {
+            create: {},
+          },
+        },
       },
     },
   });
@@ -41,8 +46,12 @@ async function main() {
       email: 'examiner@example.com',
       name: 'Examiner User',
       password: 'password123',
-      examiner: {
-        create: {},
+      lecturer: {
+        create: {
+          supervisor: {
+            create: {},
+          },
+        },
       },
     },
   });
@@ -71,7 +80,7 @@ async function main() {
       },
       examiners: {
         connect: {
-          userId: user3.id,
+          lecturerId: user3.id,
         },
       },
     },
@@ -100,12 +109,12 @@ async function main() {
       details: 'First Nomination',
       supervisor: {
         connect: {
-          userId: user2.id,
+          lecturerId: user2.id,
         },
       },
       examiner: {
         connect: {
-          userId: user3.id,
+          lecturerId: user3.id,
         },
       },
     },

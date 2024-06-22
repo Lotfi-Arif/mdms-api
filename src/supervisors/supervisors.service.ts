@@ -8,6 +8,7 @@ import {
   Project,
   Viva,
   Nomination,
+  Lecturer,
 } from '@prisma/client';
 
 @Injectable()
@@ -83,22 +84,19 @@ export class SupervisorsService {
   }
 
   // Get a list of lecturers that are registered on the system (Examiners and Supervisors)
-  async getLecturerList(): Promise<User[]> {
-    const examiners = await this.prisma.examiner.findMany({
-      select: { userId: true },
-    });
-    const supervisors = await this.prisma.supervisor.findMany({
-      select: { userId: true },
+  async getLecturerList(): Promise<Lecturer[]> {
+    const lecturers = await this.prisma.lecturer.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
     });
 
-    const examinerIds = [
-      ...examiners.map((examiner) => examiner.userId),
-      ...supervisors.map((supervisor) => supervisor.userId),
-    ];
-
-    return this.prisma.user.findMany({
-      where: { id: { in: examinerIds } },
-    });
+    return lecturers;
   }
 
   // When in the nominate examiner page, the supervisor will nominate an examiner for a viva
@@ -141,7 +139,7 @@ export class SupervisorsService {
   // if current supervisor is a viva examiner, get all vivas assigned to the supervisor
   async getAssignedVivas(supervisorId: string): Promise<Viva[]> {
     return this.prisma.viva.findMany({
-      where: { examiners: { every: { userId: supervisorId } } },
+      where: { examiners: { some: { id: supervisorId } } },
     });
   }
 }

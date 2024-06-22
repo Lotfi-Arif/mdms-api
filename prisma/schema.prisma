@@ -16,9 +16,19 @@ model User {
   updatedAt DateTime @updatedAt
 
   // Specific user roles
-  student    Student?
-  supervisor Supervisor?
-  examiner   Examiner?
+  student  Student?
+  lecturer Lecturer?
+}
+
+model Lecturer {
+  id          String       @id @default(uuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id])
+  nominations Nomination[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  supervisor  Supervisor?
+  examiner    Examiner?
 }
 
 // Student-specific data
@@ -37,30 +47,29 @@ model Student {
 
 // Supervisor-specific data
 model Supervisor {
-  id          String       @id @default(uuid())
-  userId      String       @unique
-  user        User         @relation(fields: [userId], references: [id])
-  students    Student[]
-  nominations Nomination[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id         String    @id @default(uuid())
+  lecturerId String    @unique
+  lecturer   Lecturer  @relation(fields: [lecturerId], references: [id])
+  students   Student[]
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 }
 
 // Examiner-specific data
 model Examiner {
-  id          String       @id @default(uuid())
-  userId      String       @unique
-  user        User         @relation(fields: [userId], references: [id])
-  vivas       Viva[]       @relation("vivasParticipated")
-  nominations Nomination[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id         String   @id @default(uuid())
+  lecturerId String   @unique
+  lecturer   Lecturer @relation(fields: [lecturerId], references: [id])
+  vivas      Viva[]   @relation("vivasParticipated")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
 
 model Submission {
   id        String   @id @default(uuid())
-  title     String
-  content   String
+  title     String // Title of the submission
+  content   String // URL to the submission
+  feedback  String? // Feedback from the examiner
   studentId String
   student   Student  @relation(fields: [studentId], references: [id])
   createdAt DateTime @default(now())
@@ -68,14 +77,19 @@ model Submission {
 }
 
 model Viva {
-  id        String     @id @default(uuid())
-  topic     String
-  studentId String     @unique
-  student   Student    @relation(fields: [studentId], references: [id])
-  examiners Examiner[] @relation("vivasParticipated")
-  project   Project?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id           String       @id @default(uuid())
+  topic        String
+  studentId    String       @unique
+  student      Student      @relation(fields: [studentId], references: [id])
+  vivaDate     DateTime?
+  evaluation   String?
+  examiners    Examiner[]   @relation("vivasParticipated")
+  nominations  Nomination[] @relation("nominations")
+  project      Project?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  nominationId String?
+  Nomination   Nomination[]
 }
 
 model Project {
@@ -90,12 +104,14 @@ model Project {
 }
 
 model Nomination {
-  id           String     @id @default(uuid())
-  details      String
-  supervisorId String
-  examinerId   String
-  supervisor   Supervisor @relation(fields: [supervisorId], references: [id])
-  examiner     Examiner   @relation(fields: [examinerId], references: [id])
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @default(now())
+  id         String   @id @default(uuid())
+  details    String
+  lecturerId String
+  accepted   Boolean  @default(false)
+  lecturer   Lecturer @relation(fields: [lecturerId], references: [id])
+  vivas      Viva[]   @relation("nominations")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now())
+  Viva       Viva?    @relation(fields: [vivaId], references: [id])
+  vivaId     String?
 }

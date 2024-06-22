@@ -11,10 +11,10 @@ import { StudentsService } from './students.service';
 import {
   Student,
   Submission,
-  User,
   Project,
   Viva,
   Prisma,
+  Lecturer,
 } from '@prisma/client';
 
 @Controller('students')
@@ -67,7 +67,7 @@ export class StudentsController {
   }
 
   @Get('lecturers')
-  getLecturerList(): Promise<User[]> {
+  getLecturerList(): Promise<Lecturer[]> {
     return this.studentsService.getLecturerList();
   }
 

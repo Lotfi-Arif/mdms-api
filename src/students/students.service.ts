@@ -4,9 +4,9 @@ import {
   Student,
   Prisma,
   Submission,
-  User,
   Project,
   Viva,
+  Lecturer,
 } from '@prisma/client';
 
 @Injectable()
@@ -64,24 +64,9 @@ export class StudentsService {
     });
   }
 
-  // Displays all the lecturers that are registered on the system (Examiners and Supervisors)
-  async getLecturerList(): Promise<User[]> {
-    const examiners = await this.prisma.examiner.findMany({
-      select: { userId: true },
-    });
-
-    const supervisors = await this.prisma.supervisor.findMany({
-      select: { userId: true },
-    });
-
-    const lecturerIds = [
-      ...examiners.map((examiner) => examiner.userId),
-      ...supervisors.map((supervisor) => supervisor.userId),
-    ];
-
-    return this.prisma.user.findMany({
-      where: { id: { in: lecturerIds } },
-    });
+  // Displays all the lecturers that are registered on the system
+  async getLecturerList(): Promise<Lecturer[]> {
+    return this.prisma.lecturer.findMany();
   }
 
   // Displays all the projects that students have submitted
