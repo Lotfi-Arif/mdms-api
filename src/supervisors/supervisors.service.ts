@@ -101,15 +101,15 @@ export class SupervisorsService {
 
   // When in the nominate examiner page, the supervisor will nominate an examiner for a viva
   async nominateExaminer(
-    supervisorId: string,
     examinerId: string,
     details: string,
   ): Promise<Nomination> {
     return this.prisma.nomination.create({
       data: {
         details,
-        supervisor: { connect: { id: supervisorId } },
-        examiner: { connect: { id: examinerId } },
+        lecturer: {
+          connect: { id: examinerId },
+        },
       },
     });
   }

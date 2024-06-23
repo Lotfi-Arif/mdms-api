@@ -66,12 +66,11 @@ export class SupervisorsController {
 
   @Post(':id/nominate')
   nominateExaminer(
-    @Param('id') supervisorId: string,
-    @Body() nominationData: { examinerId: string; details: string },
+    @Param('id') examinerId: string,
+    @Body() nominationData: { details: string },
   ): Promise<Nomination> {
     return this.supervisorsService.nominateExaminer(
-      supervisorId,
-      nominationData.examinerId,
+      examinerId,
       nominationData.details,
     );
   }

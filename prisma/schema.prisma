@@ -77,19 +77,17 @@ model Submission {
 }
 
 model Viva {
-  id           String       @id @default(uuid())
-  topic        String
-  studentId    String       @unique
-  student      Student      @relation(fields: [studentId], references: [id])
-  vivaDate     DateTime?
-  evaluation   String?
-  examiners    Examiner[]   @relation("vivasParticipated")
-  nominations  Nomination[] @relation("nominations")
-  project      Project?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  nominationId String?
-  Nomination   Nomination[]
+  id          String       @id @default(uuid())
+  topic       String
+  studentId   String       @unique
+  student     Student      @relation(fields: [studentId], references: [id])
+  vivaDate    DateTime?
+  evaluation  String?
+  examiners   Examiner[]   @relation("vivasParticipated")
+  nominations Nomination[] @relation("nominations")
+  project     Project?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 }
 
 model Project {
@@ -112,6 +110,4 @@ model Nomination {
   vivas      Viva[]   @relation("nominations")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
-  Viva       Viva?    @relation(fields: [vivaId], references: [id])
-  vivaId     String?
 }

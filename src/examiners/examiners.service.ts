@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Examiner, Prisma, Nomination, Viva, Lecturer } from '@prisma/client';
+import {
+  Examiner,
+  Prisma,
+  Nomination,
+  Viva,
+  Lecturer,
+  Project,
+} from '@prisma/client';
 
 @Injectable()
 export class ExaminersService {
@@ -39,19 +46,55 @@ export class ExaminersService {
   // Display all nomination requests for the current examiner
   async getNominationRequests(examinerId: string): Promise<Nomination[]> {
     return this.prisma.nomination.findMany({
-      where: { examinerId },
-      include: { examiner: {} },
+      where: {
+        lecturer: {
+          examiner: { id: examinerId },
+        },
+      },
     });
   }
 
-  // this will need to get the nomination id and update the nomination to accepted
+  // Accepts a nomination request, the lecturer will become an examiner if the nomination is accepted
   async acceptNomination(nominationId: string): Promise<Nomination> {
-    return this.prisma.nomination.update({
+    // Update the nomination to accepted
+    const nomination = await this.prisma.nomination.update({
       where: { id: nominationId },
-      data: {
-        accepted: true,
+      data: { accepted: true },
+      include: {
+        lecturer: {
+          include: { examiner: true },
+        },
       },
     });
+
+    // Check if the lecturer is not already an examiner
+    if (!nomination.lecturer.examiner) {
+      // Make the lecturer an examiner
+      await this.prisma.examiner.create({
+        data: {
+          lecturer: {
+            connect: {
+              id: nomination.lecturer.id,
+            },
+          },
+        },
+      });
+    }
+
+    // Create a new viva for the student if needed
+    // Assuming we have vivaData to be passed in some form
+    const vivaData = {
+      topic: 'New Viva Topic',
+      student: { connect: { id: 'student-id' } },
+      vivaDate: new Date(),
+      examiners: { connect: { id: nomination.lecturer.id } },
+    };
+
+    await this.prisma.viva.create({
+      data: vivaData,
+    });
+
+    return nomination;
   }
 
   // Rejects a nomination request
@@ -66,22 +109,32 @@ export class ExaminersService {
   async evaluateStudent(vivaId: string, evaluation: string): Promise<Viva> {
     return this.prisma.viva.update({
       where: { id: vivaId },
-      // TODO - Add evaluation to the viva model in the Prisma schema
       data: { evaluation },
     });
   }
 
-  // Displays all the lecturers that are registered on the system
+  // Displays all the lecturers that are registered on the system, specify if they are already examiners or not
   async getLecturerList(): Promise<Lecturer[]> {
-    return this.prisma.lecturer.findMany();
+    return this.prisma.lecturer.findMany({
+      include: {
+        user: { select: { name: true, email: true } },
+        examiner: true,
+        supervisor: true,
+      },
+    });
   }
 
   // Display all students projects that have been added to the system
-  async getProjectArchive(): Promise<any[]> {
+  async getProjectArchive(): Promise<Project[]> {
     return this.prisma.project.findMany({
       select: {
+        id: true,
         title: true,
-        student: { select: { user: { select: { name: true } } } },
+        studentId: true,
+        vivaId: true,
+        createdAt: true,
+        updatedAt: true,
+        student: { include: { user: { select: { name: true } } } },
       },
     });
   }
