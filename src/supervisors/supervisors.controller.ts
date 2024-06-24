@@ -16,6 +16,7 @@ import {
   Prisma,
   Project,
   Lecturer,
+  User,
 } from '@prisma/client';
 
 @Controller('supervisors')
@@ -52,16 +53,34 @@ export class SupervisorsController {
     return this.supervisorsService.deleteSupervisor(id);
   }
 
-  @Get(':id/student-progress')
+  @Get(':supervisorId')
+  getAssignedStudents(
+    @Param('supervisorId') supervisorId: string,
+  ): Promise<User[]> {
+    return this.supervisorsService.getAssignedStudents(supervisorId);
+  }
+
+  @Get(':supervisorId/student-progress/:id')
   getStudentProgress(
-    @Param('id') supervisorId: string,
+    @Param('id') studentId: string,
+    @Param('supervisorId') supervisorId: string,
   ): Promise<{ studentId: string; progress: number }[]> {
-    return this.supervisorsService.getStudentProgressBar(supervisorId);
+    return this.supervisorsService.getStudentProgressBar(
+      supervisorId,
+      studentId,
+    );
+  }
+
+  @Get('submissions/:studentId')
+  getStudentSubmissions(
+    @Param('studentId') studentId: string,
+  ): Promise<Submission[]> {
+    return this.supervisorsService.getStudentSubmissions(studentId);
   }
 
   @Get(':id/submissions')
-  getSubmissions(@Param('id') supervisorId: string): Promise<Submission[]> {
-    return this.supervisorsService.getSubmissions(supervisorId);
+  getSubmissions(@Param('id') studentId: string): Promise<Submission[]> {
+    return this.supervisorsService.getSubmissions(studentId);
   }
 
   @Post(':id/nominate')

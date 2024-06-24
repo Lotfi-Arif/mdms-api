@@ -7,10 +7,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// TODO: Make sure the ID is consistent throughout the different types of user models
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  name      String?
+  name      String
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -24,11 +25,12 @@ model Lecturer {
   id          String       @id @default(uuid())
   userId      String       @unique
   user        User         @relation(fields: [userId], references: [id])
+  staffNumber String       @unique
   nominations Nomination[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
-  supervisor  Supervisor?
-  examiner    Examiner?
+  supervisor  Supervisor? // an admin will assign a student to a supervisor which is a lecturer
+  examiner    Examiner? // a lecturer can be an examiner, when a nomination is accepted
 }
 
 // Student-specific data
@@ -36,6 +38,7 @@ model Student {
   id           String       @id @default(uuid())
   userId       String       @unique
   user         User         @relation(fields: [userId], references: [id])
+  matricNumber String       @unique
   submissions  Submission[]
   supervisor   Supervisor?  @relation(fields: [supervisorId], references: [id])
   project      Project?
@@ -69,7 +72,7 @@ model Submission {
   id        String   @id @default(uuid())
   title     String // Title of the submission
   content   String // URL to the submission
-  feedback  String? // Feedback from the examiner
+  feedback  String? // Feedback from the supervisor 
   studentId String
   student   Student  @relation(fields: [studentId], references: [id])
   createdAt DateTime @default(now())
@@ -81,8 +84,9 @@ model Viva {
   topic       String
   studentId   String       @unique
   student     Student      @relation(fields: [studentId], references: [id])
-  vivaDate    DateTime?
-  evaluation  String?
+  vivaDate    DateTime? // Date of the viva, it is scheduled when the nomination is accepted
+  evaluation  String? // Evaluation of the viva, given by the examiners
+  passed      Boolean? // Whether the student passed the viva or not
   examiners   Examiner[]   @relation("vivasParticipated")
   nominations Nomination[] @relation("nominations")
   project     Project?
@@ -106,6 +110,7 @@ model Nomination {
   details    String
   lecturerId String
   accepted   Boolean  @default(false)
+  rejected   Boolean  @default(false)
   lecturer   Lecturer @relation(fields: [lecturerId], references: [id])
   vivas      Viva[]   @relation("nominations")
   createdAt  DateTime @default(now())

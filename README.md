@@ -50,7 +50,7 @@ You can access the PostgreSQL database in several ways:
    - **Port**: `5432`
    - **User**: `postgres`
    - **Password**: `postgres`
-   - **Database**: `development`
+   - **Database**: `mdms-development`
 
 ## Useful Prisma Commands
 

@@ -24,7 +24,9 @@ async function main() {
         name: 'Student One',
         password: 'password123',
         student: {
-          create: {},
+          create: {
+            matricNumber: 'A18CS4043',
+          },
         },
       },
     });
@@ -35,7 +37,9 @@ async function main() {
         name: 'Student Two',
         password: 'password123',
         student: {
-          create: {},
+          create: {
+            matricNumber: 'A19CS4043',
+          },
         },
       },
     });
@@ -47,6 +51,7 @@ async function main() {
         password: 'password123',
         lecturer: {
           create: {
+            staffNumber: 'Staff123',
             supervisor: {
               create: {},
             },
@@ -62,6 +67,7 @@ async function main() {
         password: 'password123',
         lecturer: {
           create: {
+            staffNumber: 'Staff124',
             supervisor: {
               create: {},
             },
@@ -77,6 +83,7 @@ async function main() {
         password: 'password123',
         lecturer: {
           create: {
+            staffNumber: 'Staff678',
             examiner: {
               create: {},
             },
@@ -92,6 +99,7 @@ async function main() {
         password: 'password123',
         lecturer: {
           create: {
+            staffNumber: 'Staff890',
             examiner: {
               create: {},
             },
