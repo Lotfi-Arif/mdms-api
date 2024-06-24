@@ -6,6 +6,16 @@ import { Lecturer, Project, Student, Submission, Viva } from '@prisma/client';
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
 
+  @Get(':id')
+  getStudentById(@Param('id') studentId: string): Promise<Student | null> {
+    return this.studentsService.getStudentById(studentId);
+  }
+
+  @Get()
+  getAllStudents(): Promise<Student[]> {
+    return this.studentsService.getAllStudents();
+  }
+
   @Get(':id/progress')
   getStudentProgress(@Param('id') studentId: string): Promise<{
     student: Student;

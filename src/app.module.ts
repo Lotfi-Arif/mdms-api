@@ -5,11 +5,9 @@ import { UsersModule } from './users/users.module';
 import { StudentsModule } from './students/students.module';
 import { SupervisorsModule } from './supervisors/supervisors.module';
 import { ExaminersModule } from './examiners/examiners.module';
-import { ProjectsModule } from './projects/projects.module';
-import { SubmissionsModule } from './submissions/submissions.module';
-import { NominationsModule } from './nominations/nominations.module';
-import { VivasModule } from './vivas/vivas.module';
-import { PrismaModule } from 'nestjs-prisma';
+import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
+import { providePrismaClientExceptionFilter } from 'nestjs-prisma';
+import { PRISMA_ERROR_MAP } from './constants';
 
 @Module({
   imports: [
@@ -17,15 +15,14 @@ import { PrismaModule } from 'nestjs-prisma';
     StudentsModule,
     SupervisorsModule,
     ExaminersModule,
-    ProjectsModule,
-    SubmissionsModule,
-    NominationsModule,
-    VivasModule,
     PrismaModule.forRoot({
       isGlobal: true,
+      prismaServiceOptions: {
+        middlewares: [loggingMiddleware()],
+      },
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, providePrismaClientExceptionFilter(PRISMA_ERROR_MAP)],
 })
 export class AppModule {}

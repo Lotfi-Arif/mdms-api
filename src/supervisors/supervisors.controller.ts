@@ -23,11 +23,9 @@ import {
 export class SupervisorsController {
   constructor(private readonly supervisorsService: SupervisorsService) {}
 
-  @Post()
-  create(
-    @Body() supervisorData: Prisma.SupervisorCreateInput,
-  ): Promise<Supervisor> {
-    return this.supervisorsService.createSupervisor(supervisorData);
+  @Post(':lecturerId')
+  create(@Param('lecturerId') lecturerId: string): Promise<Supervisor> {
+    return this.supervisorsService.makeLecturerSupervisor(lecturerId);
   }
 
   @Get()
@@ -72,9 +70,13 @@ export class SupervisorsController {
   }
 
   @Get('submissions/:studentId')
-  getStudentSubmissions(
-    @Param('studentId') studentId: string,
-  ): Promise<Submission[]> {
+  getStudentSubmissions(@Param('studentId') studentId: string): Promise<
+    | Submission[]
+    | {
+        errorType: string;
+        message: string;
+      }
+  > {
     return this.supervisorsService.getStudentSubmissions(studentId);
   }
 

@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import {
   Supervisor,
@@ -16,10 +20,62 @@ import {
 export class SupervisorsService {
   constructor(private prisma: PrismaService) {}
 
-  async createSupervisor(
-    data: Prisma.SupervisorCreateInput,
-  ): Promise<Supervisor> {
-    return this.prisma.supervisor.create({ data });
+  async makeLecturerSupervisor(lecturerId: string): Promise<Supervisor> {
+    const lecturer = await this.prisma.lecturer.findUnique({
+      where: { id: lecturerId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!lecturer) {
+      throw new NotFoundException('Lecturer not found');
+    }
+
+    const supervisor = await this.prisma.supervisor.findFirst({
+      where: { lecturerId },
+      include: {
+        lecturer: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (supervisor) {
+      return supervisor;
+    }
+
+    return this.prisma.supervisor.create({
+      data: {
+        lecturer: {
+          connect: { id: lecturerId },
+        },
+      },
+      include: {
+        lecturer: {
+          include: {
+            user: {
+              select: {
+                name: true,
+                email: true,
+              },
+            },
+          },
+        },
+      },
+    });
   }
 
   async getAllSupervisors(): Promise<Supervisor[]> {
@@ -172,7 +228,7 @@ export class SupervisorsService {
     });
 
     if (!supervisor) {
-      throw new Error('Student not assigned to supervisor');
+      throw new ForbiddenException('Student not assigned to supervisor');
     }
 
     return this.prisma.submission.findMany({
@@ -189,7 +245,7 @@ export class SupervisorsService {
 
   // Get a list of lecturers that are registered on the system (Examiners and Supervisors)
   async getLecturerList(): Promise<Lecturer[]> {
-    return this.prisma.lecturer.findMany({
+    const lecturers = await this.prisma.lecturer.findMany({
       include: {
         user: {
           select: {
@@ -199,6 +255,8 @@ export class SupervisorsService {
         },
       },
     });
+
+    return lecturers;
   }
 
   // When in the nominate examiner page, the supervisor will nominate an examiner for a viva
