@@ -1,19 +1,18 @@
 import { Module } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { FirebaseService } from './firebase.service';
-import serviceAccount from '../../service-account.json';
 
 @Module({
   providers: [
     {
       provide: 'FIREBASE_ADMIN',
       useFactory: () => {
+        const serviceAccount = JSON.parse(
+          process.env.GOOGLE_SERVICE_ACCOUNT_KEY,
+        );
+
         return admin.initializeApp({
-          credential: admin.credential.cert({
-            projectId: serviceAccount.project_id,
-            clientEmail: serviceAccount.client_email,
-            privateKey: serviceAccount.private_key,
-          }),
+          credential: admin.credential.cert(serviceAccount),
         });
       },
     },
