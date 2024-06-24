@@ -8,7 +8,6 @@ import { ExaminersModule } from './examiners/examiners.module';
 import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
 import { providePrismaClientExceptionFilter } from 'nestjs-prisma';
 import { PRISMA_ERROR_MAP } from './constants';
-import { FirebaseService } from './firebase/firebase.service';
 import { FirebaseModule } from './firebase/firebase.module';
 import { AuthModule } from './auth/auth.module';
 
@@ -28,10 +27,6 @@ import { AuthModule } from './auth/auth.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    providePrismaClientExceptionFilter(PRISMA_ERROR_MAP),
-    FirebaseService,
-  ],
+  providers: [AppService, providePrismaClientExceptionFilter(PRISMA_ERROR_MAP)],
 })
 export class AppModule {}

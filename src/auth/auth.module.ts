@@ -1,21 +1,20 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthController } from './auth.controller';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
-import { PrismaService } from 'nestjs-prisma';
-import { FirebaseService } from '../firebase/firebase.service';
 import { JwtStrategy } from './jwt.strategy';
+import { FirebaseModule } from '../firebase/firebase.module'; // Import FirebaseModule
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({
-      secret: 'secret',
+      secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '60m' },
     }),
+    FirebaseModule, // Import the FirebaseModule here
   ],
-  controllers: [AuthController],
-  providers: [AuthService, PrismaService, FirebaseService, JwtStrategy],
+  providers: [AuthService, JwtStrategy],
+  exports: [AuthService],
 })
 export class AuthModule {}
