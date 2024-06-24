@@ -1,53 +1,10 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Patch,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, Delete } from '@nestjs/common';
 import { StudentsService } from './students.service';
-import {
-  Student,
-  Submission,
-  Project,
-  Viva,
-  Prisma,
-  Lecturer,
-} from '@prisma/client';
+import { Lecturer, Project, Submission, Viva } from '@prisma/client';
 
 @Controller('students')
 export class StudentsController {
   constructor(private readonly studentsService: StudentsService) {}
-
-  @Post()
-  create(@Body() studentData: Prisma.StudentCreateInput): Promise<Student> {
-    return this.studentsService.createStudent(studentData);
-  }
-
-  @Get()
-  findAll(): Promise<Student[]> {
-    return this.studentsService.getAllStudents();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string): Promise<Student | null> {
-    return this.studentsService.getStudentById(id);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() studentData: Prisma.StudentUpdateInput,
-  ): Promise<Student> {
-    return this.studentsService.updateStudent(id, studentData);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string): Promise<Student> {
-    return this.studentsService.deleteStudent(id);
-  }
 
   @Get(':id/progress')
   getStudentProgress(@Param('id') studentId: string): Promise<number> {
@@ -55,15 +12,19 @@ export class StudentsController {
   }
 
   @Post(':id/submissions')
-  createSubmission(
+  addStudentSubmission(
     @Param('id') studentId: string,
-    @Body() submissionData: { title: string; content: string },
+    @Body('title') title: string,
+    @Body('content') content: string,
   ): Promise<Submission> {
-    return this.studentsService.createSubmission(
-      studentId,
-      submissionData.title,
-      submissionData.content,
-    );
+    return this.studentsService.addStudentSubmission(studentId, title, content);
+  }
+
+  @Delete(':id')
+  deleteStudentSubmission(
+    @Param('id') submissionId: string,
+  ): Promise<Submission> {
+    return this.studentsService.deleteStudentSubmission(submissionId);
   }
 
   @Get('lecturers')
@@ -71,12 +32,12 @@ export class StudentsController {
     return this.studentsService.getLecturerList();
   }
 
-  @Get('projects/archive')
+  @Get('projects')
   getProjectArchive(): Promise<Project[]> {
     return this.studentsService.getProjectArchive();
   }
 
-  @Get(':id/viva')
+  @Get(':id/viva-details')
   getVivaDetails(@Param('id') studentId: string): Promise<Viva | null> {
     return this.studentsService.getVivaDetails(studentId);
   }

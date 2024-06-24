@@ -276,6 +276,8 @@ async function main() {
     // Create projects
     const project1 = await prisma.project.create({
       data: {
+        projectType: 'Development',
+        subjectArea: 'SECR',
         title: 'First Project',
         student: { connect: { userId: student1.id } },
         viva: { connect: { id: viva1.id } },
@@ -284,6 +286,8 @@ async function main() {
 
     const project2 = await prisma.project.create({
       data: {
+        projectType: 'Research',
+        subjectArea: 'SECJ',
         title: 'Second Project',
         student: { connect: { userId: student2.id } },
         viva: { connect: { id: viva2.id } },

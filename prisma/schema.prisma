@@ -95,14 +95,16 @@ model Viva {
 }
 
 model Project {
-  id        String   @id @default(uuid())
-  title     String
-  studentId String   @unique
-  student   Student  @relation(fields: [studentId], references: [id])
-  vivaId    String   @unique
-  viva      Viva     @relation(fields: [vivaId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  title       String
+  studentId   String   @unique
+  subjectArea String
+  projectType String
+  student     Student  @relation(fields: [studentId], references: [id])
+  vivaId      String   @unique
+  viva        Viva     @relation(fields: [vivaId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Nomination {

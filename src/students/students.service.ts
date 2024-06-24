@@ -1,12 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   Student,
   Prisma,
-  Submission,
   Project,
   Viva,
   Lecturer,
+  Submission,
 } from '@prisma/client';
 
 @Injectable()
@@ -49,35 +49,103 @@ export class StudentsService {
     return (completedPhases / totalPhases) * 100;
   }
 
-  // Creates a new submission for a student
-  async createSubmission(
+  // Method to add a new submission for a student
+  async addStudentSubmission(
     studentId: string,
     title: string,
     content: string,
   ): Promise<Submission> {
+    const submissions = await this.prisma.submission.findMany({
+      where: { studentId },
+    });
+
+    if (submissions.length >= 4) {
+      throw new BadRequestException(
+        'A student cannot create more than 4 submissions.',
+      );
+    }
+
     return this.prisma.submission.create({
       data: {
         title,
         content,
-        student: { connect: { id: studentId } },
+        student: {
+          connect: { id: studentId },
+        },
       },
     });
   }
 
+  // Method to delete a submission for a student
+  async deleteStudentSubmission(submissionId: string): Promise<Submission> {
+    return this.prisma.submission.delete({ where: { id: submissionId } });
+  }
+
   // Displays all the lecturers that are registered on the system
   async getLecturerList(): Promise<Lecturer[]> {
-    return this.prisma.lecturer.findMany();
+    const lecturers = await this.prisma.lecturer.findMany({
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return lecturers;
   }
 
   // Displays all the projects that students have submitted
   async getProjectArchive(): Promise<Project[]> {
-    return this.prisma.project.findMany();
+    const projects = await this.prisma.project.findMany({
+      include: {
+        student: {
+          select: {
+            matricNumber: true,
+            user: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return projects;
   }
 
   // Displays the project details of a specific student
   async getVivaDetails(studentId: string): Promise<Viva | null> {
-    return this.prisma.viva.findFirst({
+    const viva = await this.prisma.viva.findFirst({
       where: { studentId },
+      include: {
+        project: {
+          select: {
+            title: true,
+          },
+        },
+        examiners: {
+          select: {
+            lecturer: {
+              select: {
+                user: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     });
+
+    if (!viva) {
+      return null;
+    }
+
+    return viva;
   }
 }

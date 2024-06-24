@@ -67,11 +67,21 @@ export class ExaminersService {
           examiner: { id: examinerId },
         },
       },
+      include: {
+        lecturer: {
+          include: {
+            user: { select: { name: true, email: true } },
+          },
+        },
+      },
     });
   }
 
   // Accepts a nomination request, the lecturer will become an examiner if the nomination is accepted
-  async acceptNomination(nominationId: string): Promise<Nomination> {
+  async acceptNomination(
+    nominationId: string,
+    vivaData: Prisma.VivaCreateInput,
+  ): Promise<Nomination> {
     // Update the nomination to accepted
     const nomination = await this.prisma.nomination.update({
       where: { id: nominationId },
@@ -98,14 +108,6 @@ export class ExaminersService {
     }
 
     // Create a new viva for the student if needed
-    // Assuming we have vivaData to be passed in some form
-    const vivaData = {
-      topic: 'New Viva Topic',
-      student: { connect: { id: 'student-id' } },
-      vivaDate: new Date(),
-      examiners: { connect: { id: nomination.lecturer.id } },
-    };
-
     await this.prisma.viva.create({
       data: vivaData,
     });
@@ -121,7 +123,7 @@ export class ExaminersService {
     });
   }
 
-  // gives the student evaluation on thier viva presentation
+  // Gives the student evaluation on their viva presentation
   async evaluateStudent(vivaId: string, evaluation: string): Promise<Viva> {
     return this.prisma.viva.update({
       where: { id: vivaId },
@@ -143,13 +145,7 @@ export class ExaminersService {
   // Display all students projects that have been added to the system
   async getProjectArchive(): Promise<Project[]> {
     return this.prisma.project.findMany({
-      select: {
-        id: true,
-        title: true,
-        studentId: true,
-        vivaId: true,
-        createdAt: true,
-        updatedAt: true,
+      include: {
         student: { include: { user: { select: { name: true } } } },
       },
     });
@@ -159,6 +155,14 @@ export class ExaminersService {
   async getVivaDetails(examinerId: string): Promise<Viva[]> {
     return this.prisma.viva.findMany({
       where: { examiners: { some: { id: examinerId } } },
+      include: {
+        student: {
+          include: {
+            user: { select: { name: true } },
+          },
+        },
+        project: true,
+      },
     });
   }
 }
