@@ -51,7 +51,7 @@ export class SupervisorsController {
     return this.supervisorsService.deleteSupervisor(id);
   }
 
-  @Get(':supervisorId')
+  @Get(':supervisorId/students')
   getAssignedStudents(
     @Param('supervisorId') supervisorId: string,
   ): Promise<User[]> {
