@@ -6,13 +6,13 @@ import {
   Patch,
   Param,
   Delete,
+  Logger,
 } from '@nestjs/common';
 import { SupervisorsService } from './supervisors.service';
 import {
   Supervisor,
   Submission,
   Viva,
-  Nomination,
   Prisma,
   Project,
   Lecturer,
@@ -21,95 +21,166 @@ import {
 
 @Controller('supervisors')
 export class SupervisorsController {
+  private readonly logger = new Logger(SupervisorsController.name);
   constructor(private readonly supervisorsService: SupervisorsService) {}
 
   @Post(':lecturerId')
-  create(@Param('lecturerId') lecturerId: string): Promise<Supervisor> {
-    return this.supervisorsService.makeLecturerSupervisor(lecturerId);
+  async create(@Param('lecturerId') lecturerId: string): Promise<Supervisor> {
+    this.logger.log(`Creating supervisor for lecturer with ID: ${lecturerId}`);
+    const supervisor =
+      await this.supervisorsService.makeLecturerSupervisor(lecturerId);
+    this.logger.log(`Created supervisor: ${JSON.stringify(supervisor)}`);
+
+    return supervisor;
   }
 
   @Get()
-  findAll(): Promise<Supervisor[]> {
-    return this.supervisorsService.getAllSupervisors();
+  async findAll(): Promise<Supervisor[]> {
+    this.logger.log('Fetching all supervisors');
+    const supervisors = await this.supervisorsService.getAllSupervisors();
+    this.logger.log(`Fetched ${supervisors.length} supervisors`);
+
+    return supervisors;
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string): Promise<Supervisor | null> {
-    return this.supervisorsService.getSupervisorById(id);
+  async findOne(@Param('id') id: string): Promise<Supervisor | null> {
+    this.logger.log(`Fetching supervisor with ID: ${id}`);
+    const supervisor = await this.supervisorsService.getSupervisorById(id);
+    this.logger.log(`Fetched supervisor: ${JSON.stringify(supervisor)}`);
+
+    return supervisor;
   }
 
   @Patch(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateData: Prisma.SupervisorUpdateInput,
   ): Promise<Supervisor> {
-    return this.supervisorsService.updateSupervisor(id, updateData);
+    this.logger.log(`Updating supervisor with ID: ${id}`);
+    const updatedSupervisor = await this.supervisorsService.updateSupervisor(
+      id,
+      updateData,
+    );
+    this.logger.log(`Updated supervisor: ${JSON.stringify(updatedSupervisor)}`);
+
+    return updatedSupervisor;
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string): Promise<Supervisor> {
-    return this.supervisorsService.deleteSupervisor(id);
+  async remove(@Param('id') id: string): Promise<{
+    message: string;
+    supervisor: Supervisor;
+  }> {
+    this.logger.log(`Deleting supervisor with ID: ${id}`);
+    const supervisor = await this.supervisorsService.deleteSupervisor(id);
+    this.logger.log(`Deleted supervisor: ${JSON.stringify(supervisor)}`);
+
+    return supervisor;
   }
 
   @Get(':supervisorId/students')
-  getAssignedStudents(
+  async getAssignedStudents(
     @Param('supervisorId') supervisorId: string,
   ): Promise<User[]> {
-    return this.supervisorsService.getAssignedStudents(supervisorId);
+    this.logger.log(
+      `Fetching students assigned to supervisor with ID: ${supervisorId}`,
+    );
+    const students =
+      await this.supervisorsService.getAssignedStudents(supervisorId);
+    this.logger.log(`Fetched ${students.length} students`);
+
+    return students;
   }
 
   @Get(':supervisorId/student-progress/:id')
-  getStudentProgress(
+  async getStudentProgress(
     @Param('id') studentId: string,
     @Param('supervisorId') supervisorId: string,
   ): Promise<{ studentId: string; progress: number }[]> {
-    return this.supervisorsService.getStudentProgressBar(
-      supervisorId,
-      studentId,
+    this.logger.log(
+      `Fetching progress for student with ID: ${studentId} assigned to supervisor with ID: ${supervisorId}`,
     );
+    const progress = await this.supervisorsService.getStudentProgressBar(
+      studentId,
+      supervisorId,
+    );
+    this.logger.log(`Fetched progress: ${JSON.stringify(progress)}`);
+
+    return progress;
   }
 
   @Get('submissions/:studentId')
-  getStudentSubmissions(@Param('studentId') studentId: string): Promise<
+  async getStudentSubmissions(@Param('studentId') studentId: string): Promise<
     | Submission[]
     | {
         errorType: string;
         message: string;
       }
   > {
-    return this.supervisorsService.getStudentSubmissions(studentId);
+    this.logger.log(`Fetching submissions for student with ID: ${studentId}`);
+    const submissions = await this.supervisorsService.getSubmissions(studentId);
+    this.logger.log(`Fetched ${submissions.length} submissions`);
+
+    return submissions;
   }
 
   @Get(':id/submissions')
-  getSubmissions(@Param('id') studentId: string): Promise<Submission[]> {
-    return this.supervisorsService.getSubmissions(studentId);
+  async getSubmissions(@Param('id') studentId: string): Promise<Submission[]> {
+    this.logger.log(`Fetching submissions for student with ID: ${studentId}`);
+    const submissions = await this.supervisorsService.getSubmissions(studentId);
+    this.logger.log(`Fetched ${submissions.length} submissions`);
+
+    return submissions;
   }
 
   @Post(':id/nominate')
-  nominateExaminer(
+  async nominateExaminer(
     @Param('id') examinerId: string,
     @Body() nominationData: { details: string },
-  ): Promise<Nomination> {
-    return this.supervisorsService.nominateExaminer(
+  ): Promise<{
+    examinerId: string;
+    message: string;
+  }> {
+    this.logger.log(`Nominating examiner with ID: ${examinerId}`);
+    const nomination = await this.supervisorsService.nominateExaminer(
       examinerId,
       nominationData.details,
     );
+    this.logger.log(`Nominated examiner: ${JSON.stringify(nomination)}`);
+
+    return nomination;
   }
 
   @Get('lecturers')
-  getLecturerList(): Promise<Lecturer[]> {
-    return this.supervisorsService.getLecturerList();
+  async getLecturerList(): Promise<Lecturer[]> {
+    this.logger.log('Fetching all lecturers');
+    const lecturers = await this.supervisorsService.getLecturerList();
+    this.logger.log(`Fetched ${lecturers.length} lecturers`);
+
+    return lecturers;
   }
 
   @Get(':supervisorId/projects/archive')
-  getProjectArchive(
+  async getProjectArchive(
     @Param('supervisorId') supervisorId: string,
   ): Promise<Project[]> {
-    return this.supervisorsService.getProjectArchive(supervisorId);
+    this.logger.log(
+      `Fetching project archive for supervisor with ID: ${supervisorId}`,
+    );
+    const projects =
+      await this.supervisorsService.getProjectArchive(supervisorId);
+    this.logger.log(`Fetched ${projects.length} projects`);
+
+    return projects;
   }
 
   @Get(':id/vivas')
-  getVivaDetails(@Param('id') supervisorId: string): Promise<Viva[]> {
-    return this.supervisorsService.getAssignedVivas(supervisorId);
+  async getVivaDetails(@Param('id') supervisorId: string): Promise<Viva[]> {
+    this.logger.log(`Fetching vivas for supervisor with ID: ${supervisorId}`);
+    const vivas = await this.supervisorsService.getAssignedVivas(supervisorId);
+    this.logger.log(`Fetched ${vivas.length} vivas`);
+
+    return vivas;
   }
 }
