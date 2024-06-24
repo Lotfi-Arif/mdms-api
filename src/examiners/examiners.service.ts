@@ -18,12 +18,23 @@ export class ExaminersService {
   }
 
   async findAllExaminers(): Promise<Examiner[]> {
-    return this.prisma.examiner.findMany();
+    return this.prisma.examiner.findMany({
+      include: {
+        lecturer: {
+          include: { user: { select: { name: true, email: true } } },
+        },
+      },
+    });
   }
 
   async findOneExaminer(id: string): Promise<Examiner | null> {
     return this.prisma.examiner.findUnique({
       where: { id },
+      include: {
+        lecturer: {
+          include: { user: { select: { name: true, email: true } } },
+        },
+      },
     });
   }
 
@@ -34,6 +45,11 @@ export class ExaminersService {
     return this.prisma.examiner.update({
       where: { id },
       data,
+      include: {
+        lecturer: {
+          include: { user: { select: { name: true, email: true } } },
+        },
+      },
     });
   }
 
