@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SubmissionsService } from './submissions.service';
 import { SubmissionsController } from './submissions.controller';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaModule } from 'nestjs-prisma';
 
 @Module({
+  imports: [PrismaModule],
   controllers: [SubmissionsController],
-  providers: [SubmissionsService, PrismaService],
+  providers: [SubmissionsService],
 })
 export class SubmissionsModule {}
