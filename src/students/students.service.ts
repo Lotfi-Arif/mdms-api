@@ -39,14 +39,56 @@ export class StudentsService {
     return this.prisma.student.delete({ where: { id } });
   }
 
-  // Displays the progress of a student in terms of the number of submissions made
-  async getStudentProgress(studentId: string): Promise<number> {
+  // Displays the progress of a student in terms of the number of submissions made, show the full student data along with the number of submissions made divided by 4
+  async getStudentProgress(studentId: string): Promise<{
+    student: Student;
+    progress: number;
+  }> {
+    const student = await this.prisma.student.findUnique({
+      where: { id: studentId },
+      include: {
+        supervisor: {
+          include: {
+            lecturer: {
+              select: {
+                user: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    if (!student) {
+      throw new BadRequestException('Student not found.');
+    }
+
     const submissions = await this.prisma.submission.findMany({
       where: { studentId },
     });
-    const totalPhases = 4; // Proposal, Submission 1, Submission 2, Final Submission
+
+    const totalPhases = 4;
     const completedPhases = submissions.length;
-    return (completedPhases / totalPhases) * 100;
+    if (submissions.length > totalPhases) {
+      throw new BadRequestException(
+        'A student cannot create more than 4 submissions.',
+      );
+    }
+
+    return {
+      student,
+      progress: (completedPhases / totalPhases) * 100,
+    };
   }
 
   // Method to add a new submission for a student
@@ -54,7 +96,10 @@ export class StudentsService {
     studentId: string,
     title: string,
     content: string,
-  ): Promise<Submission> {
+  ): Promise<{
+    message: string;
+    submission: Submission;
+  }> {
     const submissions = await this.prisma.submission.findMany({
       where: { studentId },
     });
@@ -65,7 +110,7 @@ export class StudentsService {
       );
     }
 
-    return this.prisma.submission.create({
+    const submission = await this.prisma.submission.create({
       data: {
         title,
         content,
@@ -74,11 +119,30 @@ export class StudentsService {
         },
       },
     });
+
+    return {
+      message: 'Submission created successfully.',
+      submission,
+    };
   }
 
   // Method to delete a submission for a student
-  async deleteStudentSubmission(submissionId: string): Promise<Submission> {
-    return this.prisma.submission.delete({ where: { id: submissionId } });
+  async deleteStudentSubmission(
+    submissionId: string,
+  ): Promise<{ message: string }> {
+    const submission = await this.prisma.submission.findUnique({
+      where: { id: submissionId },
+    });
+
+    if (!submission) {
+      throw new BadRequestException('Submission not found.');
+    }
+
+    await this.prisma.submission.delete({
+      where: { id: submissionId },
+    });
+
+    return { message: `Submission with ID ${submissionId} has been deleted.` };
   }
 
   // Displays all the lecturers that are registered on the system
