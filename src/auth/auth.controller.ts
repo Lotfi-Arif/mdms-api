@@ -1,19 +1,37 @@
-// src/auth/auth.controller.ts
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterUserDto } from './auth.types';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register')
-  async register(@Body() registerUserDto: RegisterUserDto) {
-    return this.authService.register(registerUserDto);
+  @Get('user/:id')
+  async getUserById(@Param('id') id: string) {
+    return this.authService.getUserById(id);
   }
 
-  @Post('login')
-  async login(@Body() tokenId: string) {
-    return this.authService.login(tokenId);
+  @Get('users')
+  async getUserList() {
+    return this.authService.getUserList();
+  }
+
+  @Post('user')
+  async createUser(
+    @Body()
+    userDetails: {
+      email: string;
+      password: string;
+      firstName: string;
+      lastName: string;
+      universityId: string;
+      role: string;
+    },
+  ) {
+    return this.authService.createUser(userDetails);
+  }
+
+  @Delete('user/:id')
+  async deleteUser(@Param('id') id: string) {
+    return this.authService.deleteUser(id);
   }
 }

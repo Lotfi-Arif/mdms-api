@@ -7,7 +7,7 @@ export interface LoginResponse {
   access_token: string;
 }
 
-export interface FirebaseUser {
+export interface ClerkUser {
   uid: string;
   email: string;
   email_verified: boolean;

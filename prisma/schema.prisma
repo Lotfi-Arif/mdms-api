@@ -15,18 +15,7 @@ model User {
   password             String
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
-  uid                  String?
-  emailVerified        Boolean?
-  displayName          String?
-  photoURL             String?
-  phoneNumber          String?
-  disabled             Boolean?
-  passwordHash         String?
-  passwordSalt         String?
-  customClaims         Json?
-  tenantId             String?
-  tokensValidAfterTime DateTime?
-  multiFactor          Json?
+  clerkId              String?
 
   // Specific user roles
   student  Student?
