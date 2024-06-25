@@ -5,12 +5,13 @@ import { PRISMA_ERROR_MAP } from './constants';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors();
 
   const { httpAdapter } = app.get(HttpAdapterHost);
   app.useGlobalFilters(
     new PrismaClientExceptionFilter(httpAdapter, PRISMA_ERROR_MAP),
   );
 
-  await app.listen(3000);
+  await app.listen(3001);
 }
 bootstrap();
