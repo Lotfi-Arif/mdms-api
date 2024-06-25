@@ -20,3 +20,11 @@ export interface CreateUserDto {
   name: string;
   password: string;
 }
+
+export interface RegisterUserDto {
+  email: string;
+  name: string;
+  password: string;
+  universityId: string;
+  role?: 'student' | 'lecturer' | 'supervisor' | 'examiner';
+}

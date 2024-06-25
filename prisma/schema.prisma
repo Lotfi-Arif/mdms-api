@@ -9,12 +9,24 @@ datasource db {
 
 // TODO: Make sure the ID is consistent throughout the different types of user models
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                   String    @id @default(uuid())
+  email                String    @unique
+  name                 String
+  password             String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  uid                  String?
+  emailVerified        Boolean?
+  displayName          String?
+  photoURL             String?
+  phoneNumber          String?
+  disabled             Boolean?
+  passwordHash         String?
+  passwordSalt         String?
+  customClaims         Json?
+  tenantId             String?
+  tokensValidAfterTime DateTime?
+  multiFactor          Json?
 
   // Specific user roles
   student  Student?
