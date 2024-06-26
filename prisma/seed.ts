@@ -22,7 +22,7 @@ async function main() {
       data: {
         email: 'student1@example.com',
         name: 'Student One',
-        password: 'password123',
+        clerkId: '123456',
         student: {
           create: {
             matricNumber: 'A18CS4043',
@@ -35,7 +35,7 @@ async function main() {
       data: {
         email: 'student2@example.com',
         name: 'Student Two',
-        password: 'password123',
+        clerkId: '654321',
         student: {
           create: {
             matricNumber: 'A19CS4043',
@@ -48,7 +48,7 @@ async function main() {
       data: {
         email: 'supervisor1@example.com',
         name: 'Supervisor One',
-        password: 'password123',
+        clerkId: '789012',
         lecturer: {
           create: {
             staffNumber: 'Staff123',
@@ -64,7 +64,7 @@ async function main() {
       data: {
         email: 'supervisor2@example.com',
         name: 'Supervisor Two',
-        password: 'password123',
+        clerkId: '210987',
         lecturer: {
           create: {
             staffNumber: 'Staff124',
@@ -80,7 +80,7 @@ async function main() {
       data: {
         email: 'examiner1@example.com',
         name: 'Examiner One',
-        password: 'password123',
+        clerkId: '345678',
         lecturer: {
           create: {
             staffNumber: 'Staff678',
@@ -96,7 +96,7 @@ async function main() {
       data: {
         email: 'examiner2@example.com',
         name: 'Examiner Two',
-        password: 'password123',
+        clerkId: '876543',
         lecturer: {
           create: {
             staffNumber: 'Staff890',

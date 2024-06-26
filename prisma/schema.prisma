@@ -9,13 +9,14 @@ datasource db {
 
 // TODO: Make sure the ID is consistent throughout the different types of user models
 model User {
-  id                   String    @id @default(uuid())
-  email                String    @unique
-  name                 String
-  password             String
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  clerkId              String?
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  // there is no need to store the password in the database, we will use clerk to handle authentication
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  // The id below is used to reference the user with our clerk authentication=
+  clerkId   String   @unique
 
   // Specific user roles
   student  Student?

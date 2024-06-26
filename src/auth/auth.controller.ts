@@ -19,10 +19,9 @@ export class AuthController {
   async createUser(
     @Body()
     userDetails: {
+      clerkId: string;
       email: string;
-      password: string;
-      firstName: string;
-      lastName: string;
+      name: string;
       universityId: string;
       role: string;
     },

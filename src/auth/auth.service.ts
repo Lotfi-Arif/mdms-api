@@ -31,54 +31,31 @@ export class AuthService {
   }
 
   async createUser(userDetails: {
+    clerkId: string;
     email: string;
-    password: string;
-    firstName: string;
-    lastName: string;
+    name: string;
     universityId: string;
     role: string;
   }) {
-    const { email, password, firstName, universityId, lastName, role } =
-      userDetails;
+    const { clerkId, email, name, universityId, role } = userDetails;
 
-    // Start a transaction
-    const transaction = await this.prisma.$transaction(async (prisma) => {
-      // Create user in Clerk
-      const clerkUser = await clerkClient.users.createUser({
-        emailAddress: [email],
-        password,
-        firstName,
-        lastName,
-      });
-
-      // Create user in local database
-      const localUser = await prisma.user.create({
-        data: {
-          email,
-          password,
-          name: `${firstName} ${lastName}`,
-          clerkId: clerkUser.id,
-          [role]: {
-            create: {
-              ...(role === 'lecturer'
-                ? { staffNumber: universityId }
-                : { matricNumber: universityId }),
-            },
+    // Create user in local database
+    const localUser = await this.prisma.user.create({
+      data: {
+        email,
+        name,
+        clerkId,
+        [role]: {
+          create: {
+            ...(role === 'lecturer'
+              ? { staffNumber: universityId }
+              : { matricNumber: universityId }),
           },
         },
-      });
-
-      return localUser;
+      },
     });
 
-    try {
-      const user = await transaction;
-      this.logger.log(`Successfully created user with email: ${email}`);
-      return user;
-    } catch (error) {
-      this.logger.error('Error creating user:', error);
-      throw new Error('Error creating user');
-    }
+    return localUser;
   }
 
   async deleteUser(userId: string) {
