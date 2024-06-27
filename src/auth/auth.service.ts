@@ -33,17 +33,19 @@ export class AuthService {
   async createUser(userDetails: {
     clerkId: string;
     email: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     universityId: string;
     role: string;
   }) {
-    const { clerkId, email, name, universityId, role } = userDetails;
+    const { clerkId, email, firstName, lastName, universityId, role } =
+      userDetails;
 
     // Create user in local database
     const localUser = await this.prisma.user.create({
       data: {
         email,
-        name,
+        name: `${firstName} ${lastName}`,
         clerkId,
         [role]: {
           create: {
@@ -60,7 +62,19 @@ export class AuthService {
 
   async deleteUser(userId: string) {
     try {
-      await clerkClient.users.deleteUser(userId);
+      // delete user in Clerk
+      const clerkDeleted = await clerkClient.users.deleteUser(userId);
+
+      // delete user in local database
+      const deletedUser = await this.prisma.user.delete({
+        where: { clerkId: userId },
+      });
+
+      return {
+        message: 'User deleted successfully',
+        clerkDeleted,
+        deletedUser,
+      };
     } catch (error) {
       console.error('Error deleting user in Clerk:', error);
       throw new Error('Error deleting user');

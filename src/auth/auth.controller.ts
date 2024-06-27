@@ -21,7 +21,8 @@ export class AuthController {
     userDetails: {
       clerkId: string;
       email: string;
-      name: string;
+      firstName: string;
+      lastName: string;
       universityId: string;
       role: string;
     },
