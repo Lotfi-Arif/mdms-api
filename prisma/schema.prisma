@@ -9,14 +9,13 @@ datasource db {
 
 // TODO: Make sure the ID is consistent throughout the different types of user models
 model User {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   email     String   @unique
-  name      String
-  // there is no need to store the password in the database, we will use clerk to handle authentication
+  password  String
+  firstName String?
+  lastName  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  // The id below is used to reference the user with our clerk authentication=
-  clerkId   String   @unique
 
   // Specific user roles
   student  Student?
@@ -24,7 +23,7 @@ model User {
 }
 
 model Lecturer {
-  id          String       @id @default(uuid())
+  id          String       @id @default(cuid())
   userId      String       @unique
   user        User         @relation(fields: [userId], references: [id])
   staffNumber String       @unique
@@ -37,7 +36,7 @@ model Lecturer {
 
 // Student-specific data
 model Student {
-  id           String       @id @default(uuid())
+  id           String       @id @default(cuid())
   userId       String       @unique
   user         User         @relation(fields: [userId], references: [id])
   matricNumber String       @unique
@@ -52,7 +51,7 @@ model Student {
 
 // Supervisor-specific data
 model Supervisor {
-  id         String    @id @default(uuid())
+  id         String    @id @default(cuid())
   lecturerId String    @unique
   lecturer   Lecturer  @relation(fields: [lecturerId], references: [id])
   students   Student[]
@@ -62,7 +61,7 @@ model Supervisor {
 
 // Examiner-specific data
 model Examiner {
-  id         String   @id @default(uuid())
+  id         String   @id @default(cuid())
   lecturerId String   @unique
   lecturer   Lecturer @relation(fields: [lecturerId], references: [id])
   vivas      Viva[]   @relation("vivasParticipated")
@@ -71,7 +70,7 @@ model Examiner {
 }
 
 model Submission {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
   title     String // Title of the submission
   content   String // URL to the submission
   feedback  String? // Feedback from the supervisor 
@@ -82,7 +81,7 @@ model Submission {
 }
 
 model Viva {
-  id          String       @id @default(uuid())
+  id          String       @id @default(cuid())
   topic       String
   studentId   String       @unique
   student     Student      @relation(fields: [studentId], references: [id])
@@ -97,7 +96,7 @@ model Viva {
 }
 
 model Project {
-  id          String   @id @default(uuid())
+  id          String   @id @default(cuid())
   title       String
   studentId   String   @unique
   subjectArea String
@@ -110,7 +109,7 @@ model Project {
 }
 
 model Nomination {
-  id         String   @id @default(uuid())
+  id         String   @id @default(cuid())
   details    String
   lecturerId String
   accepted   Boolean  @default(false)

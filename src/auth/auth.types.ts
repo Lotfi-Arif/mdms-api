@@ -1,30 +1,20 @@
+import { User } from '@prisma/client';
+
+// Interface for the JWT payload
 export interface JwtPayload {
-  username: string;
+  username: string; // Changed from email to username
   sub: string;
 }
 
+export interface LoginDto {
+  email: string;
+  password: string;
+}
+
+// Interface for the login response
 export interface LoginResponse {
   access_token: string;
 }
 
-export interface ClerkUser {
-  uid: string;
-  email: string;
-  email_verified: boolean;
-  name?: string;
-  picture?: string;
-}
-
-export interface CreateUserDto {
-  email: string;
-  name: string;
-  password: string;
-}
-
-export interface RegisterUserDto {
-  email: string;
-  name: string;
-  password: string;
-  universityId: string;
-  role?: 'student' | 'lecturer' | 'supervisor' | 'examiner';
-}
+// Type for the user without the password
+export type UserWithoutPassword = Omit<User, 'password'>;

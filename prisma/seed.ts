@@ -1,6 +1,11 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, User, Student, Lecturer } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+type UserWithRole = User & {
+  student: Student | null;
+  lecturer: Lecturer | null;
+};
 
 async function main() {
   try {
@@ -9,294 +14,206 @@ async function main() {
     await prisma.project.deleteMany();
     await prisma.viva.deleteMany();
     await prisma.submission.deleteMany();
-    await prisma.student.deleteMany();
-    await prisma.supervisor.deleteMany();
     await prisma.examiner.deleteMany();
+    await prisma.supervisor.deleteMany();
+    await prisma.student.deleteMany();
     await prisma.lecturer.deleteMany();
     await prisma.user.deleteMany();
 
     console.log('Existing data cleaned up.');
 
-    // Create users
-    const student1 = await prisma.user.create({
-      data: {
-        email: 'student1@example.com',
-        name: 'Student One',
-        clerkId: '123456',
-        student: {
-          create: {
-            matricNumber: 'A18CS4043',
-          },
+    // Create students
+    const students = await Promise.all([
+      prisma.user.create({
+        data: {
+          email: 'student1@example.com',
+          firstName: 'Student',
+          lastName: 'One',
+          password: 'password',
+          student: { create: { matricNumber: 'A18CS4043' } },
         },
-      },
-    });
-
-    const student2 = await prisma.user.create({
-      data: {
-        email: 'student2@example.com',
-        name: 'Student Two',
-        clerkId: '654321',
-        student: {
-          create: {
-            matricNumber: 'A19CS4043',
-          },
+        include: { student: true },
+      }),
+      prisma.user.create({
+        data: {
+          email: 'student2@example.com',
+          firstName: 'Student',
+          lastName: 'Two',
+          password: 'password',
+          student: { create: { matricNumber: 'A19CS4044' } },
         },
-      },
-    });
+        include: { student: true },
+      }),
+    ]);
 
-    await prisma.user.create({
-      data: {
-        email: 'supervisor1@example.com',
-        name: 'Supervisor One',
-        clerkId: '789012',
-        lecturer: {
-          create: {
-            staffNumber: 'Staff123',
-            supervisor: {
-              create: {},
+    // Create lecturers (including supervisors and examiners)
+    const lecturers = await Promise.all([
+      prisma.user.create({
+        data: {
+          email: 'lecturer1@example.com',
+          firstName: 'Lecturer',
+          lastName: 'One',
+          password: 'password',
+          lecturer: { create: { staffNumber: 'STAFF001' } },
+        },
+        include: { lecturer: true },
+      }),
+      prisma.user.create({
+        data: {
+          email: 'supervisor1@example.com',
+          firstName: 'Supervisor',
+          lastName: 'One',
+          password: 'password',
+          lecturer: {
+            create: {
+              staffNumber: 'STAFF002',
+              supervisor: { create: {} },
             },
           },
         },
-      },
-    });
-
-    await prisma.user.create({
-      data: {
-        email: 'supervisor2@example.com',
-        name: 'Supervisor Two',
-        clerkId: '210987',
-        lecturer: {
-          create: {
-            staffNumber: 'Staff124',
-            supervisor: {
-              create: {},
+        include: { lecturer: { include: { supervisor: true } } },
+      }),
+      prisma.user.create({
+        data: {
+          email: 'examiner1@example.com',
+          firstName: 'Examiner',
+          lastName: 'One',
+          password: 'password',
+          lecturer: {
+            create: {
+              staffNumber: 'STAFF003',
+              examiner: { create: {} },
             },
           },
         },
-      },
-    });
-
-    const examiner1 = await prisma.user.create({
-      data: {
-        email: 'examiner1@example.com',
-        name: 'Examiner One',
-        clerkId: '345678',
-        lecturer: {
-          create: {
-            staffNumber: 'Staff678',
-            examiner: {
-              create: {},
+        include: { lecturer: { include: { examiner: true } } },
+      }),
+      prisma.user.create({
+        data: {
+          email: 'superexaminer@example.com',
+          firstName: 'Super',
+          lastName: 'Examiner',
+          password: 'password',
+          lecturer: {
+            create: {
+              staffNumber: 'STAFF004',
+              supervisor: { create: {} },
+              examiner: { create: {} },
             },
           },
         },
-      },
-    });
-
-    const examiner2 = await prisma.user.create({
-      data: {
-        email: 'examiner2@example.com',
-        name: 'Examiner Two',
-        clerkId: '876543',
-        lecturer: {
-          create: {
-            staffNumber: 'Staff890',
-            examiner: {
-              create: {},
-            },
-          },
+        include: {
+          lecturer: { include: { supervisor: true, examiner: true } },
         },
-      },
-    });
+      }),
+    ]);
 
-    console.log('Users created.');
-
-    // Create submissions
-    const submission1 = await prisma.submission.create({
-      data: {
-        title: 'First Submission',
-        content: 'Content of first submission',
-        student: {
-          connect: {
-            userId: student1.id,
-          },
-        },
-      },
-    });
-
-    const submission2 = await prisma.submission.create({
-      data: {
-        title: 'Second Submission',
-        content: 'Content of second submission',
-        student: {
-          connect: {
-            userId: student2.id,
-          },
-        },
-      },
-    });
-
-    console.log('Submissions created:', submission1, submission2);
-
-    // Ensure the examiners' lecturer records exist
-    const examinerLecturer1 = await prisma.lecturer.findUnique({
-      where: { userId: examiner1.id },
-    });
-
-    const examinerLecturer2 = await prisma.lecturer.findUnique({
-      where: { userId: examiner2.id },
-    });
-
-    if (!examinerLecturer1 || !examinerLecturer2) {
-      throw new Error('Examiner lecturer record not found.');
-    }
+    const users: UserWithRole[] = [
+      ...students.map((s) => ({ ...s, lecturer: null })),
+      ...lecturers.map((l) => ({ ...l, student: null })),
+    ];
 
     console.log(
-      'Examiner Lecturer IDs:',
-      examinerLecturer1.id,
-      examinerLecturer2.id,
+      'Users created:',
+      users.map((u) => u.email),
     );
 
-    // Create nominations
-    const nomination1 = await prisma.nomination.create({
-      data: {
-        details: 'Nomination for Examiner One',
-        lecturer: {
-          connect: {
-            id: examinerLecturer1.id,
+    // Create submissions (only for students)
+    const submissions = await Promise.all(
+      students.map((student) =>
+        prisma.submission.create({
+          data: {
+            title: `Submission by ${student.firstName} ${student.lastName}`,
+            content: `Content of submission by ${student.firstName} ${student.lastName}`,
+            student: { connect: { userId: student.id } },
           },
-        },
-      },
-    });
-
-    const nomination2 = await prisma.nomination.create({
-      data: {
-        details: 'Nomination for Examiner Two',
-        lecturer: {
-          connect: {
-            id: examinerLecturer2.id,
-          },
-        },
-      },
-    });
-
-    console.log('Nominations created:', nomination1, nomination2);
-
-    // Accept nominations
-    const updatedNomination1 = await prisma.nomination.update({
-      where: { id: nomination1.id },
-      data: { accepted: true },
-      include: {
-        lecturer: {
-          include: { examiner: true },
-        },
-      },
-    });
-
-    const updatedNomination2 = await prisma.nomination.update({
-      where: { id: nomination2.id },
-      data: { accepted: true },
-      include: {
-        lecturer: {
-          include: { examiner: true },
-        },
-      },
-    });
-
-    console.log(
-      'Nominations accepted:',
-      updatedNomination1,
-      updatedNomination2,
+        }),
+      ),
     );
 
-    // Check if lecturers are not already examiners, then create examiner entries
-    if (!updatedNomination1.lecturer.examiner) {
-      const newExaminer1 = await prisma.examiner.create({
-        data: { lecturer: { connect: { id: examinerLecturer1.id } } },
-      });
-      console.log('Lecturer One made an examiner:', newExaminer1);
-    }
+    console.log('Submissions created:', submissions.length);
 
-    if (!updatedNomination2.lecturer.examiner) {
-      const newExaminer2 = await prisma.examiner.create({
-        data: { lecturer: { connect: { id: examinerLecturer2.id } } },
-      });
-      console.log('Lecturer Two made an examiner:', newExaminer2);
-    }
+    // Create nominations (only for lecturers)
+    const lecturerRecords = await prisma.lecturer.findMany();
+    const nominations = await Promise.all(
+      lecturerRecords.map((lecturer) =>
+        prisma.nomination.create({
+          data: {
+            details: `Nomination for ${lecturer.staffNumber}`,
+            lecturer: { connect: { id: lecturer.id } },
+          },
+        }),
+      ),
+    );
 
-    // Create vivas
-    const viva1 = await prisma.viva.create({
-      data: {
-        topic: 'First Viva',
-        student: { connect: { userId: student1.id } },
-        vivaDate: new Date(),
-      },
-    });
+    console.log('Nominations created:', nominations.length);
 
-    const viva2 = await prisma.viva.create({
-      data: {
-        topic: 'Second Viva',
-        student: { connect: { userId: student2.id } },
-        vivaDate: new Date(),
-      },
-    });
+    // Accept some nominations randomly
+    await Promise.all(
+      nominations.map((nomination) =>
+        Math.random() > 0.5
+          ? prisma.nomination.update({
+              where: { id: nomination.id },
+              data: { accepted: true },
+            })
+          : Promise.resolve(),
+      ),
+    );
 
-    console.log('Vivas created:', viva1, viva2);
+    console.log('Some nominations randomly accepted');
 
-    // Debugging IDs
-    console.log('Viva1 ID:', viva1.id);
-    console.log('Viva2 ID:', viva2.id);
+    // Create vivas (only for students)
+    const vivas = await Promise.all(
+      students.map((student) =>
+        prisma.viva.create({
+          data: {
+            topic: `Viva for ${student.firstName} ${student.lastName}`,
+            student: { connect: { userId: student.id } },
+            vivaDate: new Date(
+              Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000,
+            ), // Random date within next 30 days
+          },
+        }),
+      ),
+    );
 
-    // Connect examiners to vivas
-    await prisma.viva.update({
-      where: { id: viva1.id },
-      data: {
-        examiners: {
-          connect: [
-            { lecturerId: examinerLecturer1.id },
-            { lecturerId: examinerLecturer2.id },
-          ],
-        },
-      },
-    });
+    console.log('Vivas created:', vivas.length);
 
-    await prisma.viva.update({
-      where: { id: viva2.id },
-      data: {
-        examiners: {
-          connect: [
-            { lecturerId: examinerLecturer1.id },
-            { lecturerId: examinerLecturer2.id },
-          ],
-        },
-      },
-    });
+    // Assign examiners to vivas
+    const examiners = await prisma.examiner.findMany();
+    await Promise.all(
+      vivas.map((viva) =>
+        prisma.viva.update({
+          where: { id: viva.id },
+          data: {
+            examiners: {
+              connect: examiners.slice(0, 2).map((e) => ({ id: e.id })), // Assign first two examiners to each viva
+            },
+          },
+        }),
+      ),
+    );
 
-    console.log('Examiners connected to vivas.');
+    console.log('Examiners assigned to vivas');
 
-    // Create projects
-    const project1 = await prisma.project.create({
-      data: {
-        projectType: 'Development',
-        subjectArea: 'SECR',
-        title: 'First Project',
-        student: { connect: { userId: student1.id } },
-        viva: { connect: { id: viva1.id } },
-      },
-    });
+    // Create projects (only for students)
+    const projects = await Promise.all(
+      students.map((student, index) =>
+        prisma.project.create({
+          data: {
+            projectType: index % 2 === 0 ? 'Development' : 'Research',
+            subjectArea: index % 2 === 0 ? 'SECR' : 'SECJ',
+            title: `Project by ${student.firstName} ${student.lastName}`,
+            student: { connect: { userId: student.id } },
+            viva: { connect: { id: vivas[index].id } },
+          },
+        }),
+      ),
+    );
 
-    const project2 = await prisma.project.create({
-      data: {
-        projectType: 'Research',
-        subjectArea: 'SECJ',
-        title: 'Second Project',
-        student: { connect: { userId: student2.id } },
-        viva: { connect: { id: viva2.id } },
-      },
-    });
+    console.log('Projects created:', projects.length);
 
-    console.log('Projects created:', project1, project2);
-
-    console.log('Seeding completed.');
+    console.log('Seeding completed successfully.');
   } catch (error) {
     console.error('Error during seeding:', error);
     process.exit(1);
