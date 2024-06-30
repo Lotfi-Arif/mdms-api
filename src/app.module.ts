@@ -10,6 +10,7 @@ import { PrismaModule, loggingMiddleware } from 'nestjs-prisma';
 import { providePrismaClientExceptionFilter } from 'nestjs-prisma';
 import { PRISMA_ERROR_MAP } from './constants';
 import { AuthModule } from './auth/auth.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AuthModule } from './auth/auth.module';
       },
     }),
     AuthModule,
+    FileUploadModule,
   ],
   controllers: [AppController],
   providers: [AppService, providePrismaClientExceptionFilter(PRISMA_ERROR_MAP)],

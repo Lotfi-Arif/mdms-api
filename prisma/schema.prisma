@@ -23,6 +23,15 @@ model User {
   lecturer Lecturer?
 }
 
+model File {
+  id        String   @id @default(cuid())
+  filename  String
+  mimetype  String
+  path      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Lecturer {
   id          String       @id @default(cuid())
   userId      String       @unique
