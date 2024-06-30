@@ -31,7 +31,8 @@ export class StudentsService {
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+lastName: true,
             email: true,
           },
         },
@@ -41,7 +42,8 @@ export class StudentsService {
               select: {
                 user: {
                   select: {
-                    name: true,
+                    firstName: true,
+lastName: true,
                   },
                 },
               },
@@ -62,7 +64,8 @@ export class StudentsService {
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+lastName: true,
             email: true,
           },
         },
@@ -72,7 +75,8 @@ export class StudentsService {
               select: {
                 user: {
                   select: {
-                    name: true,
+                    firstName: true,
+lastName: true,
                   },
                 },
               },
@@ -97,7 +101,8 @@ export class StudentsService {
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+lastName: true,
             email: true,
           },
         },
@@ -107,7 +112,8 @@ export class StudentsService {
               select: {
                 user: {
                   select: {
-                    name: true,
+                    firstName: true,
+lastName: true,
                   },
                 },
               },
@@ -140,7 +146,8 @@ export class StudentsService {
               select: {
                 user: {
                   select: {
-                    name: true,
+                    firstName: true,
+lastName: true,
                   },
                 },
               },
@@ -149,7 +156,8 @@ export class StudentsService {
         },
         user: {
           select: {
-            name: true,
+            firstName: true,
+lastName: true,
             email: true,
           },
         },
@@ -267,7 +275,8 @@ export class StudentsService {
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+lastName: true,
             email: true,
           },
         },
@@ -288,7 +297,8 @@ export class StudentsService {
             matricNumber: true,
             user: {
               select: {
-                name: true,
+                firstName: true,
+lastName: true,
               },
             },
           },
@@ -319,7 +329,8 @@ export class StudentsService {
               select: {
                 user: {
                   select: {
-                    name: true,
+                    firstName: true,
+lastName: true,
                   },
                 },
               },

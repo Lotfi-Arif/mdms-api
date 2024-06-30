@@ -30,7 +30,9 @@ export class ExaminersService {
     const examiners = await this.prisma.examiner.findMany({
       include: {
         lecturer: {
-          include: { user: { select: { name: true, email: true } } },
+          include: {
+            user: { select: { firstName: true, lastName: true, email: true } },
+          },
         },
       },
     });
@@ -45,7 +47,9 @@ export class ExaminersService {
       where: { id },
       include: {
         lecturer: {
-          include: { user: { select: { name: true, email: true } } },
+          include: {
+            user: { select: { firstName: true, lastName: true, email: true } },
+          },
         },
       },
     });
@@ -64,7 +68,9 @@ export class ExaminersService {
       data,
       include: {
         lecturer: {
-          include: { user: { select: { name: true, email: true } } },
+          include: {
+            user: { select: { firstName: true, lastName: true, email: true } },
+          },
         },
       },
     });
@@ -82,7 +88,9 @@ export class ExaminersService {
       where: { id },
       include: {
         lecturer: {
-          include: { user: { select: { name: true, email: true } } },
+          include: {
+            user: { select: { firstName: true, lastName: true, email: true } },
+          },
         },
       },
     });
@@ -108,7 +116,7 @@ export class ExaminersService {
       include: {
         lecturer: {
           include: {
-            user: { select: { name: true, email: true } },
+            user: { select: { firstName: true, lastName: true, email: true } },
           },
         },
       },
@@ -233,7 +241,7 @@ export class ExaminersService {
     this.logger.debug(`Fetching all lecturers`);
     const lecturers = await this.prisma.lecturer.findMany({
       include: {
-        user: { select: { name: true, email: true } },
+        user: { select: { firstName: true, lastName: true, email: true } },
         examiner: true,
         supervisor: true,
       },
@@ -248,7 +256,9 @@ export class ExaminersService {
     this.logger.debug(`Fetching project archive`);
     const archives = await this.prisma.project.findMany({
       include: {
-        student: { include: { user: { select: { name: true } } } },
+        student: {
+          include: { user: { select: { firstName: true, lastName: true } } },
+        },
       },
     });
     this.logger.debug(`Fetched ${archives.length} projects`);
@@ -264,7 +274,7 @@ export class ExaminersService {
       include: {
         student: {
           include: {
-            user: { select: { name: true } },
+            user: { select: { firstName: true, lastName: true } },
           },
         },
         project: true,

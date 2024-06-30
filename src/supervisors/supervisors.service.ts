@@ -28,7 +28,8 @@ export class SupervisorsService {
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -49,7 +50,8 @@ export class SupervisorsService {
           include: {
             user: {
               select: {
-                name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
               },
             },
@@ -77,7 +79,8 @@ export class SupervisorsService {
           include: {
             user: {
               select: {
-                name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
               },
             },
@@ -96,7 +99,8 @@ export class SupervisorsService {
             user: {
               select: {
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
               },
             },
             supervisor: {
@@ -124,7 +128,8 @@ export class SupervisorsService {
             user: {
               select: {
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
               },
             },
             supervisor: {
@@ -156,7 +161,8 @@ export class SupervisorsService {
             user: {
               select: {
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
               },
             },
             supervisor: {
@@ -189,7 +195,8 @@ export class SupervisorsService {
             user: {
               select: {
                 email: true,
-                name: true,
+                firstName: true,
+                lastName: true,
               },
             },
             supervisor: {
@@ -278,7 +285,7 @@ export class SupervisorsService {
         return {
           studentId: student.id,
           progress,
-          studentName: student.user.name,
+          studentName: `${student.user.firstName} ${student.user.lastName}`,
           matricNumber: student.matricNumber,
         };
       }),
@@ -325,7 +332,8 @@ export class SupervisorsService {
       include: {
         user: {
           select: {
-            name: true,
+            firstName: true,
+            lastName: true,
             email: true,
           },
         },
