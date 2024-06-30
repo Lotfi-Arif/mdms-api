@@ -1,5 +1,5 @@
 // auth.service.ts
-import { Prisma, PrismaClient, User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import {
   Injectable,
   NotFoundException,
@@ -11,12 +11,13 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { PasswordService } from './password.service';
 import { Token } from './models/token.model';
+import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly prisma: PrismaClient,
+    private readonly prisma: PrismaService,
     private readonly passwordService: PasswordService,
     private readonly configService: ConfigService,
   ) {}
@@ -35,15 +36,13 @@ export class AuthService {
     try {
       const user = await this.prisma.user.create({
         data: {
-          ...payload,
+          firstName: payload.name,
+          email: payload.email,
           password: hashedPassword,
           [payload.role]: {
             create: {
-              university: {
-                connect: {
-                  id: payload.universityId,
-                },
-              },
+              [payload.role === 'student' ? 'matricNumber' : 'staffNumber']:
+                payload.universityId,
             },
           },
         },

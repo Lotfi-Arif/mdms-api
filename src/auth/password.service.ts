@@ -5,16 +5,18 @@ import { SecurityConfig } from './auth.types';
 
 @Injectable()
 export class PasswordService {
+  constructor(private configService: ConfigService) {}
+
   get bcryptSaltRounds(): string | number {
     const securityConfig = this.configService.get<SecurityConfig>('security');
+    if (!securityConfig) {
+      throw new Error('Security configuration is not defined');
+    }
     const saltOrRounds = securityConfig.bcryptSaltOrRound;
-
     return Number.isInteger(Number(saltOrRounds))
       ? Number(saltOrRounds)
       : saltOrRounds;
   }
-
-  constructor(private configService: ConfigService) {}
 
   validatePassword(password: string, hashedPassword: string): Promise<boolean> {
     return compare(password, hashedPassword);
