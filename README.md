@@ -52,6 +52,8 @@ You can access the PostgreSQL database in several ways:
    - **Password**: `postgres`
    - **Database**: `mdms-development`
 
+## Add a new .env and copy the content that is inside of the .env.template
+
 ## Useful Prisma Commands
 
 Prisma is an ORM that you use to manage your application's database. Here are some useful commands:
