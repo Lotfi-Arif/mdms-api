@@ -8,6 +8,8 @@ import {
   Supervisor,
   Examiner,
   Submission,
+  Nomination,
+  File,
   Project,
   Viva,
 } from '@prisma/client';
@@ -23,8 +25,10 @@ type AppSubjects =
       Supervisor: Supervisor;
       Examiner: Examiner;
       Submission: Submission;
+      Nomination: Nomination;
+      File: File;
       Project: Project;
-      Viva: Viva;
+      Viva: Viva & { project: Project };
     }>
   | 'all';
 
@@ -41,7 +45,9 @@ export class CaslAbilityFactory {
       };
     },
   ) {
-    const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility);
+    const { can, cannot, build } = new AbilityBuilder<AppAbility>(
+      createPrismaAbility,
+    );
 
     if (user.student) {
       can('read', 'Student', { id: user.student.id });
@@ -51,6 +57,15 @@ export class CaslAbilityFactory {
       can('read', 'Lecturer');
       can('read', 'Project');
       can('read', 'Viva', { studentId: user.student.id });
+      can('read', 'Supervisor');
+      can('read', 'Examiner');
+      can('create', 'File');
+      can('read', 'File');
+      can('update', 'File');
+      can('delete', 'File');
+
+      cannot('create', 'Project');
+      cannot('update', 'Project');
     }
 
     if (user.lecturer) {
@@ -63,11 +78,18 @@ export class CaslAbilityFactory {
         can('update', 'Submission', {
           student: { supervisor: { id: user.lecturer.supervisor.id } },
         });
+        can('read', 'Supervisor', { id: user.lecturer.supervisor.id });
+
+        can('create', 'Nomination');
       }
 
       if (user.lecturer.examiner) {
         can('read', 'Examiner', { id: user.lecturer.examiner.id });
         can('read', 'Supervisor');
+        can('read', 'Nomination');
+        can('update', 'Nomination');
+        can('read', 'File');
+
         can('read', 'Viva', {
           examiners: { some: { id: user.lecturer.examiner.id } },
         });

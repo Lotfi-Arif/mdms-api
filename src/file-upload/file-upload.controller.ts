@@ -7,18 +7,25 @@ import {
   Param,
   Get,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from './file-upload.service';
 import { diskStorage } from 'multer';
 import { Response } from 'express';
 import * as path from 'path';
+import { AppAbility } from 'src/casl/casl-ability.factory';
+import { CheckPolicies } from 'src/casl/check-policies.decorator';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+import { PoliciesGuard } from 'src/casl/policies.guard';
 
 @Controller('files')
+@UseGuards(JwtAuthGuard, PoliciesGuard)
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('upload')
+  @CheckPolicies((ability: AppAbility) => ability.can('create', 'File'))
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -43,6 +50,7 @@ export class FileUploadController {
   }
 
   @Post('uploads')
+  @CheckPolicies((ability: AppAbility) => ability.can('create', 'File'))
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: diskStorage({
@@ -71,6 +79,7 @@ export class FileUploadController {
   }
 
   @Get(':id')
+  @CheckPolicies((ability: AppAbility) => ability.can('read', 'File'))
   async getFile(@Param('id') id: string, @Res() res: Response) {
     const file = await this.fileUploadService.getFile(id);
     res.sendFile(path.join(process.cwd(), file.path));
