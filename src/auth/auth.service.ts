@@ -143,4 +143,20 @@ export class AuthService {
 
     return { accessToken, refreshToken };
   }
+
+  async fetchUser(userId: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        student: true,
+        lecturer: true,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException(`User with ID ${userId} not found`);
+    }
+
+    return user;
+  }
 }

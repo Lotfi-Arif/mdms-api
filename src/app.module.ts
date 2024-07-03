@@ -11,6 +11,7 @@ import { providePrismaClientExceptionFilter } from 'nestjs-prisma';
 import { PRISMA_ERROR_MAP } from './constants';
 import { AuthModule } from './auth/auth.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { CaslModule } from './casl/casl.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     }),
     AuthModule,
     FileUploadModule,
+    CaslModule,
   ],
   controllers: [AppController],
   providers: [AppService, providePrismaClientExceptionFilter(PRISMA_ERROR_MAP)],

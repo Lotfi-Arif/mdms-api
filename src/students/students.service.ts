@@ -32,7 +32,7 @@ export class StudentsService {
         user: {
           select: {
             firstName: true,
-lastName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -43,7 +43,7 @@ lastName: true,
                 user: {
                   select: {
                     firstName: true,
-lastName: true,
+                    lastName: true,
                   },
                 },
               },
@@ -65,7 +65,7 @@ lastName: true,
         user: {
           select: {
             firstName: true,
-lastName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -76,7 +76,7 @@ lastName: true,
                 user: {
                   select: {
                     firstName: true,
-lastName: true,
+                    lastName: true,
                   },
                 },
               },
@@ -102,7 +102,7 @@ lastName: true,
         user: {
           select: {
             firstName: true,
-lastName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -113,7 +113,7 @@ lastName: true,
                 user: {
                   select: {
                     firstName: true,
-lastName: true,
+                    lastName: true,
                   },
                 },
               },
@@ -147,7 +147,7 @@ lastName: true,
                 user: {
                   select: {
                     firstName: true,
-lastName: true,
+                    lastName: true,
                   },
                 },
               },
@@ -157,7 +157,7 @@ lastName: true,
         user: {
           select: {
             firstName: true,
-lastName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -276,7 +276,7 @@ lastName: true,
         user: {
           select: {
             firstName: true,
-lastName: true,
+            lastName: true,
             email: true,
           },
         },
@@ -298,7 +298,7 @@ lastName: true,
             user: {
               select: {
                 firstName: true,
-lastName: true,
+                lastName: true,
               },
             },
           },
@@ -330,7 +330,7 @@ lastName: true,
                 user: {
                   select: {
                     firstName: true,
-lastName: true,
+                    lastName: true,
                   },
                 },
               },
