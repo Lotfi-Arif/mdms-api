@@ -24,11 +24,11 @@ export class StudentsController {
 
   @Get(':id')
   // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
-  async getStudentById(
+  async getStudentByEmail(
     @Param('id') studentId: string,
   ): Promise<Student | null> {
     this.logger.debug(`Fetching student with ID: ${studentId}`);
-    const student = await this.studentsService.getStudentById(studentId);
+    const student = await this.studentsService.getStudentByEmail(studentId);
     this.logger.debug(`Fetched student: ${JSON.stringify(student)}`);
 
     if (!student) {
@@ -51,10 +51,7 @@ export class StudentsController {
 
   @Get(':id/progress')
   // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
-  async getStudentProgress(@Param('id') studentId: string): Promise<{
-    student: Student;
-    progress: number;
-  }> {
+  async getStudentProgress(@Param('id') studentId: string) {
     this.logger.debug(`Fetching progress for student with ID: ${studentId}`);
     const progress = await this.studentsService.getStudentProgress(studentId);
     this.logger.debug(`Fetched progress: ${JSON.stringify(progress)}`);
@@ -65,23 +62,25 @@ export class StudentsController {
     };
   }
 
-  @Post(':id/submissions')
+  @Post(':email/submissions')
   // @CheckPolicies((ability: AppAbility) => ability.can('create', 'Submission'))
   async addStudentSubmission(
-    @Param('id') studentId: string,
+    @Param('email') email: string,
     @Body('title') title: string,
-    @Body('content') content: string,
+    @Body('submissionType') submissionType: string,
+    @Body('fileId') fileId: string,
   ): Promise<{
     message: string;
     submission: Submission;
   }> {
     this.logger.debug(
-      `Adding submission for student with ID: ${studentId} with title: ${title}`,
+      `Adding submission for student with ID: ${email} with title: ${title}`,
     );
     const submission = await this.studentsService.addStudentSubmission(
-      studentId,
+      email,
       title,
-      content,
+      submissionType,
+      fileId,
     );
     this.logger.debug(`Added submission: ${JSON.stringify(submission)}`);
 

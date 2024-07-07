@@ -57,10 +57,10 @@ export class StudentsService {
     return students;
   }
 
-  async getStudentById(id: string): Promise<Student | null> {
-    this.logger.debug(`Fetching student with ID: ${id}`);
-    const student = await this.prisma.student.findUnique({
-      where: { id },
+  async getStudentByEmail(email: string): Promise<Student | null> {
+    this.logger.debug(`Fetching student with email: ${email}`);
+    const student = await this.prisma.student.findFirst({
+      where: { user: { email: email } },
       include: {
         user: {
           select: {
@@ -91,37 +91,32 @@ export class StudentsService {
   }
 
   async updateStudent(
-    id: string,
+    email: string,
     data: Prisma.StudentUpdateInput,
   ): Promise<Student> {
-    this.logger.debug(`Updating student with ID: ${id}`);
-    const updated = await this.prisma.student.update({
-      where: { id },
-      data,
-      include: {
+    this.logger.debug(`Updating student with ID: ${email}`);
+
+    // First, fetch the student using the email
+    const student = await this.prisma.student.findFirst({
+      where: {
         user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
-        supervisor: {
-          include: {
-            lecturer: {
-              select: {
-                user: {
-                  select: {
-                    firstName: true,
-                    lastName: true,
-                  },
-                },
-              },
-            },
-          },
+          email,
         },
       },
+      select: {
+        id: true,
+      },
     });
+
+    if (!student) {
+      throw new Error(`Student with email ${email} not found`);
+    }
+
+    const updated = await this.prisma.student.update({
+      where: { id: student.id },
+      data,
+    });
+
     this.logger.debug(`Updated student: ${JSON.stringify(updated)}`);
 
     return updated;
@@ -132,33 +127,31 @@ export class StudentsService {
   }
 
   // Displays the progress of a student in terms of the number of submissions made, show the full student data along with the number of submissions made divided by 4
-  async getStudentProgress(studentId: string): Promise<{
-    student: Student;
-    progress: number;
-  }> {
-    this.logger.debug(`Fetching student progress with ID: ${studentId}`);
-    const student = await this.prisma.student.findUnique({
-      where: { id: studentId },
+  async getStudentProgress(email: string) {
+    this.logger.debug(`Fetching student progress with ID: ${email}`);
+    const student = await this.prisma.user.findUnique({
+      where: {
+        email,
+      },
       include: {
-        supervisor: {
-          include: {
-            lecturer: {
-              select: {
-                user: {
+        student: {
+          select: {
+            id: true,
+            matricNumber: true,
+            supervisor: {
+              include: {
+                lecturer: {
                   select: {
-                    firstName: true,
-                    lastName: true,
+                    user: {
+                      select: {
+                        firstName: true,
+                        lastName: true,
+                      },
+                    },
                   },
                 },
               },
             },
-          },
-        },
-        user: {
-          select: {
-            firstName: true,
-            lastName: true,
-            email: true,
           },
         },
       },
@@ -166,59 +159,80 @@ export class StudentsService {
     this.logger.debug(`Fetched student: ${JSON.stringify(student)}`);
 
     if (!student) {
-      this.logger.error(`Student with ID ${studentId} not found`);
+      this.logger.error(`Student with ID ${email} not found`);
       throw new BadRequestException('Student not found.');
     }
 
-    this.logger.debug(`Fetching submissions for student with ID: ${studentId}`);
+    this.logger.debug(`Fetching submissions for student with ID: ${email}`);
     const submissions = await this.prisma.submission.findMany({
-      where: { studentId },
+      where: {
+        student: {
+          user: {
+            email,
+          },
+        },
+      },
     });
     this.logger.debug(
-      `Fetched ${submissions.length} submissions for student with ID: ${studentId}`,
+      `Fetched ${submissions.length} submissions for student with ID: ${email}`,
     );
 
     const totalPhases = 4;
     const completedPhases = submissions.length;
     if (submissions.length > totalPhases) {
-      this.logger.error(
-        `Student with ID ${studentId} has more than 4 submissions`,
-      );
+      this.logger.error(`Student with ID ${email} has more than 4 submissions`);
       throw new BadRequestException(
         'A student cannot create more than 4 submissions.',
       );
     }
 
-    this.logger.debug(`Calculating progress for student with ID: ${studentId}`);
+    this.logger.debug(`Calculating progress for student with ID: ${email}`);
 
     return {
-      student,
+      student: student.student,
       progress: (completedPhases / totalPhases) * 100,
     };
   }
 
   // Method to add a new submission for a student
   async addStudentSubmission(
-    studentId: string,
+    email: string,
     title: string,
-    content: string,
+    submissionType: string,
+    fileId: string,
   ): Promise<{
     message: string;
     submission: Submission;
   }> {
     this.logger.debug(
-      `Creating new submission for student with ID: ${studentId}`,
+      `Creating new submission for student with email: ${email}`,
     );
-    const submissions = await this.prisma.submission.findMany({
-      where: { studentId },
+
+    const student = await this.prisma.student.findFirst({
+      where: {
+        user: {
+          email,
+        },
+      },
     });
+
+    if (!student) {
+      throw new BadRequestException('Student not found.');
+    }
+
+    const submissions = await this.prisma.submission.findMany({
+      where: {
+        studentId: student.id,
+      },
+    });
+
     this.logger.debug(
-      `Fetched ${submissions.length} submissions for student with ID: ${studentId}`,
+      `Fetched ${submissions.length} submissions for student with email: ${email}`,
     );
 
     if (submissions.length >= 4) {
       this.logger.error(
-        `Student with ID ${studentId} has more than 4 submissions`,
+        `Student with email ${email} has more than 4 submissions`,
       );
       throw new BadRequestException(
         'A student cannot create more than 4 submissions.',
@@ -228,15 +242,21 @@ export class StudentsService {
     const submission = await this.prisma.submission.create({
       data: {
         title,
-        content,
+        content: submissionType,
         student: {
-          connect: { id: studentId },
+          connect: { id: student.id },
         },
+        file: {
+          connect: { id: fileId },
+        },
+      },
+      include: {
+        file: true,
       },
     });
 
     this.logger.debug(
-      `Created new submission with ID: ${submission.id} for student with ID: ${studentId}`,
+      `Created new submission with ID: ${submission.id} for student with email: ${email}`,
     );
 
     return {
@@ -311,12 +331,10 @@ export class StudentsService {
   }
 
   // Displays the project details of a specific student
-  async getVivaDetails(studentId: string): Promise<Viva | null> {
-    this.logger.debug(
-      `Fetching viva details for student with ID: ${studentId}`,
-    );
+  async getVivaDetails(email: string): Promise<Viva | null> {
+    this.logger.debug(`Fetching viva details for student with ID: ${email}`);
     const viva = await this.prisma.viva.findFirst({
-      where: { studentId },
+      where: { student: { user: { email } } },
       include: {
         project: {
           select: {
@@ -339,12 +357,10 @@ export class StudentsService {
         },
       },
     });
-    this.logger.debug(`Fetched viva details for student with ID: ${studentId}`);
+    this.logger.debug(`Fetched viva details for student with ID: ${email}`);
 
     if (!viva) {
-      this.logger.error(
-        `Viva details not found for student with ID ${studentId}`,
-      );
+      this.logger.error(`Viva details not found for student with ID ${email}`);
       return null;
     }
 

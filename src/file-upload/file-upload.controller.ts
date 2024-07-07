@@ -7,81 +7,109 @@ import {
   Param,
   Get,
   Res,
-  // UseGuards,
+  Body,
 } from '@nestjs/common';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { FileUploadService } from './file-upload.service';
 import { diskStorage } from 'multer';
 import { Response } from 'express';
 import * as path from 'path';
-// import { AppAbility } from 'src/casl/casl-ability.factory';
-// import { CheckPolicies } from 'src/casl/check-policies.decorator';
-// import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-// import { PoliciesGuard } from 'src/casl/policies.guard';
 
 @Controller('files')
-// @UseGuards(JwtAuthGuard, PoliciesGuard)
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('upload')
-  // @CheckPolicies((ability: AppAbility) => ability.can('create', 'File'))
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const { firstName, lastName, matricNumber } = req.body;
           const ext = path.extname(file.originalname);
-          const filename = `${path.basename(file.originalname, ext)}-${uniqueSuffix}${ext}`;
+          const filename = `${firstName}_${lastName}_${matricNumber}${ext}`;
           cb(null, filename);
         },
       }),
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype.match(/\/(pdf|zip)$/)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Only .pdf and .zip files are allowed!'), false);
+        }
+      },
     }),
   )
-  async uploadSingleFile(@UploadedFile() file) {
-    const savedFile = await this.fileUploadService.saveFileData(
-      file.filename,
-      file.mimetype,
-      file.path,
-    );
-    return { id: savedFile.id };
+  async uploadSingleFile(
+    @UploadedFile() file,
+    @Body('title') title: string,
+    @Body('studentId') studentId: string,
+    @Body('submissionType') submissionType: string,
+  ) {
+    const { file: savedFile, submission } =
+      await this.fileUploadService.saveFileDataAndCreateSubmission(
+        file.filename,
+        file.mimetype,
+        file.path,
+        title,
+        studentId,
+        submissionType,
+      );
+
+    return { fileId: savedFile.id, submissionId: submission.id };
   }
 
   @Post('uploads')
-  // @CheckPolicies((ability: AppAbility) => ability.can('create', 'File'))
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const { firstName, lastName, matricNumber } = req.body;
           const ext = path.extname(file.originalname);
-          const filename = `${path.basename(file.originalname, ext)}-${uniqueSuffix}${ext}`;
+          const filename = `${firstName}_${lastName}_${matricNumber}_${Date.now()}${ext}`;
           cb(null, filename);
         },
       }),
+      fileFilter: (req, file, cb) => {
+        if (file.mimetype.match(/\/(pdf|zip)$/)) {
+          cb(null, true);
+        } else {
+          cb(new Error('Only .pdf and .zip files are allowed!'), false);
+        }
+      },
     }),
   )
-  async uploadMultipleFiles(@UploadedFiles() files) {
+  async uploadMultipleFiles(
+    @UploadedFiles() files,
+    @Body('title') title: string,
+    @Body('studentId') studentId: string,
+    @Body('submissionType') submissionType: string,
+  ) {
     const responses = [];
     for (const file of files) {
-      const savedFile = await this.fileUploadService.saveFileData(
-        file.filename,
-        file.mimetype,
-        file.path,
-      );
-      responses.push({ id: savedFile.id });
+      const { file: savedFile, submission } =
+        await this.fileUploadService.saveFileDataAndCreateSubmission(
+          file.filename,
+          file.mimetype,
+          file.path,
+          title,
+          studentId,
+          submissionType,
+        );
+      responses.push({ fileId: savedFile.id, submissionId: submission.id });
     }
     return responses;
   }
 
   @Get(':id')
-  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'File'))
   async getFile(@Param('id') id: string, @Res() res: Response) {
     const file = await this.fileUploadService.getFile(id);
     res.sendFile(path.join(process.cwd(), file.path));
+  }
+
+  @Get('submissions/:studentId')
+  async getStudentSubmissions(@Param('studentId') studentId: string) {
+    return this.fileUploadService.getSubmissionsByStudentId(studentId);
   }
 }

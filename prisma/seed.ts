@@ -1,5 +1,6 @@
 import { PrismaClient, User, Student, Lecturer } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { createDummyFile } from './util';
 
 const prisma = new PrismaClient();
 
@@ -38,7 +39,37 @@ async function main() {
           firstName: 'Student',
           lastName: 'One',
           password: hashedPassword,
-          student: { create: { matricNumber: 'A18CS4043' } },
+          student: {
+            create: {
+              matricNumber: 'A18CS4043',
+              finalReportCompleted: false,
+              // final Date with the time set to 18:00:00
+              finalReportDate: new Date('2022-04-01T18:00:00'),
+              presentationCompleted: false,
+              presentationDate: new Date('2022-04-02T09:00:00'),
+              progress1Completed: false,
+              progress1Date: new Date('2022-04-03T14:30:00'),
+              progress2Completed: false,
+              progress2Date: new Date('2022-04-04T10:00:00'),
+              supervisor: {
+                create: {
+                  lecturer: {
+                    create: {
+                      staffNumber: 'STAFF006',
+                      user: {
+                        create: {
+                          email: 'staff@email.com',
+                          firstName: 'Staff',
+                          lastName: 'One',
+                          password: hashedPassword,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
         },
         include: { student: true },
       }),
@@ -128,14 +159,35 @@ async function main() {
 
     // Create submissions (only for students)
     const submissions = await Promise.all(
-      students.map((student) =>
-        prisma.submission.create({
-          data: {
-            title: `Submission by ${student.firstName} ${student.lastName}`,
-            content: `Content of submission by ${student.firstName} ${student.lastName}`,
-            student: { connect: { userId: student.id } },
+      students.flatMap((student) =>
+        ['proposal', 'progress1', 'progress2', 'final'].map(
+          async (submissionType) => {
+            const fileName = `${student.firstName}_${student.lastName}_${student.student?.matricNumber}_${submissionType}.pdf`;
+            const { path: filePath } = await createDummyFile(
+              student.firstName,
+              student.lastName,
+              student.student?.matricNumber,
+              submissionType,
+            );
+
+            const file = await prisma.file.create({
+              data: {
+                filename: fileName,
+                mimetype: 'application/pdf',
+                path: filePath,
+              },
+            });
+
+            return prisma.submission.create({
+              data: {
+                title: `${submissionType.charAt(0).toUpperCase() + submissionType.slice(1)} Submission by ${student.firstName} ${student.lastName}`,
+                content: submissionType,
+                student: { connect: { userId: student.id } },
+                file: { connect: { id: file.id } },
+              },
+            });
           },
-        }),
+        ),
       ),
     );
 

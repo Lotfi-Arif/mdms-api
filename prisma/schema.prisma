@@ -24,12 +24,13 @@ model User {
 }
 
 model File {
-  id        String   @id @default(cuid())
-  filename  String
-  mimetype  String
-  path      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(cuid())
+  filename   String
+  mimetype   String
+  path       String
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  submission Submission?
 }
 
 model Lecturer {
@@ -89,10 +90,12 @@ model Examiner {
 
 model Submission {
   id        String   @id @default(cuid())
-  title     String // Title of the submission
-  content   String // URL to the submission
-  feedback  String? // Feedback from the supervisor 
+  title     String
+  content   String // We'll use this field to store the submission type
+  feedback  String?
   studentId String
+  fileId    String   @unique
+  file      File     @relation(fields: [fileId], references: [id])
   student   Student  @relation(fields: [studentId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

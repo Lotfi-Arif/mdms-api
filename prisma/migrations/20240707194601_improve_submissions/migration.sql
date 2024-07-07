@@ -5,10 +5,23 @@ CREATE TABLE "User" (
     "password" TEXT NOT NULL,
     "firstName" TEXT,
     "lastName" TEXT,
+    "refreshToken" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "File" (
+    "id" TEXT NOT NULL,
+    "filename" TEXT NOT NULL,
+    "mimetype" TEXT NOT NULL,
+    "path" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "File_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -27,9 +40,17 @@ CREATE TABLE "Student" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "matricNumber" TEXT NOT NULL,
+    "supervisorId" TEXT,
+    "progress1Date" TIMESTAMP(3),
+    "progress1Completed" BOOLEAN,
+    "progress2Date" TIMESTAMP(3),
+    "progress2Completed" BOOLEAN,
+    "finalReportDate" TIMESTAMP(3),
+    "finalReportCompleted" BOOLEAN,
+    "presentationDate" TIMESTAMP(3),
+    "presentationCompleted" BOOLEAN,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "supervisorId" TEXT,
 
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
@@ -61,6 +82,7 @@ CREATE TABLE "Submission" (
     "content" TEXT NOT NULL,
     "feedback" TEXT,
     "studentId" TEXT NOT NULL,
+    "fileId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -142,6 +164,9 @@ CREATE UNIQUE INDEX "Supervisor_lecturerId_key" ON "Supervisor"("lecturerId");
 CREATE UNIQUE INDEX "Examiner_lecturerId_key" ON "Examiner"("lecturerId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Submission_fileId_key" ON "Submission"("fileId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Viva_studentId_key" ON "Viva"("studentId");
 
 -- CreateIndex
@@ -176,6 +201,9 @@ ALTER TABLE "Supervisor" ADD CONSTRAINT "Supervisor_lecturerId_fkey" FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE "Examiner" ADD CONSTRAINT "Examiner_lecturerId_fkey" FOREIGN KEY ("lecturerId") REFERENCES "Lecturer"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Submission" ADD CONSTRAINT "Submission_fileId_fkey" FOREIGN KEY ("fileId") REFERENCES "File"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Submission" ADD CONSTRAINT "Submission_studentId_fkey" FOREIGN KEY ("studentId") REFERENCES "Student"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
