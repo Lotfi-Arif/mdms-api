@@ -12,8 +12,8 @@ export class FileUploadService {
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
-      user: 'arifariana1510@gmail.com',
-      pass: 'ArifSuffianMuhamadZaili',
+      user: 'someEmail',
+      pass: 'somePass',
     },
   });
 
