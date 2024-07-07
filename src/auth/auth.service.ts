@@ -1,5 +1,5 @@
 // auth.service.ts
-import { Prisma, User } from '@prisma/client';
+import { Examiner, Prisma, Student, Supervisor, User } from '@prisma/client';
 import {
   Injectable,
   NotFoundException,
@@ -13,6 +13,17 @@ import { JwtService } from '@nestjs/jwt';
 import { PasswordService } from './password.service';
 import { Token } from './models/token.model';
 import { PrismaService } from 'nestjs-prisma';
+
+type UserWithoutPassword = Omit<
+  User & {
+    lecturer: {
+      supervisor?: Supervisor;
+      examiner?: Examiner;
+    };
+    student: Student;
+  },
+  'password'
+>;
 
 @Injectable()
 export class AuthService {
@@ -79,7 +90,14 @@ export class AuthService {
     }
   }
 
-  async login(email: string, password: string): Promise<Token> {
+  async login(
+    email: string,
+    password: string,
+  ): Promise<{
+    accessToken: string;
+    refreshToken: string;
+    user: UserWithoutPassword;
+  }> {
     this.logger.debug(`Logging in user with email: ${email}`);
 
     const user = await this.prisma.user.findUnique({ where: { email } });
@@ -108,14 +126,27 @@ export class AuthService {
     this.logger.debug(`Generated tokens for user with ID: ${user.id}`);
 
     // Store refresh token in the database
-    await this.prisma.user.update({
+    const updatedUser = await this.prisma.user.update({
       where: { id: user.id },
       data: { refreshToken: tokens.refreshToken },
+      include: {
+        lecturer: {
+          include: {
+            supervisor: true,
+            examiner: true,
+          },
+        },
+        student: true,
+      },
     });
 
     this.logger.debug(`Stored refresh token for user with ID: ${user.id}`);
 
-    return tokens;
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: updatedUser.refreshToken,
+      user: updatedUser,
+    };
   }
 
   async refreshToken(refreshToken: string): Promise<Token> {
@@ -177,9 +208,9 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async fetchUser(userId: string): Promise<User> {
+  async fetchUser(email: string): Promise<User> {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { email },
       include: {
         student: true,
         lecturer: true,
@@ -187,7 +218,7 @@ export class AuthService {
     });
 
     if (!user) {
-      throw new NotFoundException(`User with ID ${userId} not found`);
+      throw new NotFoundException(`User with email ${email} not found`);
     }
 
     return user;

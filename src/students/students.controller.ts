@@ -7,23 +7,23 @@ import {
   Delete,
   Logger,
   NotFoundException,
-  UseGuards,
+  // UseGuards,
 } from '@nestjs/common';
 import { StudentsService } from './students.service';
 import { Lecturer, Project, Student, Submission, Viva } from '@prisma/client';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { PoliciesGuard } from 'src/casl/policies.guard';
-import { AppAbility } from 'src/casl/casl-ability.factory';
-import { CheckPolicies } from 'src/casl/check-policies.decorator';
+// import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+// import { PoliciesGuard } from 'src/casl/policies.guard';
+// import { AppAbility } from 'src/casl/casl-ability.factory';
+// import { CheckPolicies } from 'src/casl/check-policies.decorator';
 
 @Controller('students')
-@UseGuards(JwtAuthGuard, PoliciesGuard)
+// @UseGuards(JwtAuthGuard, PoliciesGuard)
 export class StudentsController {
   private readonly logger = new Logger(StudentsController.name);
   constructor(private readonly studentsService: StudentsService) {}
 
   @Get(':id')
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
   async getStudentById(
     @Param('id') studentId: string,
   ): Promise<Student | null> {
@@ -40,7 +40,7 @@ export class StudentsController {
   }
 
   @Get()
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
   async getAllStudents(): Promise<Student[]> {
     this.logger.debug('Fetching all students');
     const students = await this.studentsService.getAllStudents();
@@ -50,7 +50,7 @@ export class StudentsController {
   }
 
   @Get(':id/progress')
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
   async getStudentProgress(@Param('id') studentId: string): Promise<{
     student: Student;
     progress: number;
@@ -66,7 +66,7 @@ export class StudentsController {
   }
 
   @Post(':id/submissions')
-  @CheckPolicies((ability: AppAbility) => ability.can('create', 'Submission'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('create', 'Submission'))
   async addStudentSubmission(
     @Param('id') studentId: string,
     @Body('title') title: string,
@@ -89,7 +89,7 @@ export class StudentsController {
   }
 
   @Delete(':id')
-  @CheckPolicies((ability: AppAbility) => ability.can('delete', 'Submission'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('delete', 'Submission'))
   async deleteStudentSubmission(@Param('id') submissionId: string): Promise<{
     message: string;
   }> {
@@ -102,7 +102,7 @@ export class StudentsController {
   }
 
   @Get('lecturers')
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Lecturer'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Lecturer'))
   async getLecturerList(): Promise<Lecturer[]> {
     this.logger.debug('Fetching all lecturers');
     const lecturers = await this.studentsService.getLecturerList();
@@ -112,7 +112,7 @@ export class StudentsController {
   }
 
   @Get('projects')
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Project'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Project'))
   async getProjectArchive(): Promise<Project[]> {
     this.logger.debug('Fetching all projects');
     const projects = await this.studentsService.getProjectArchive();
@@ -122,7 +122,7 @@ export class StudentsController {
   }
 
   @Get(':id/viva-details')
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Viva'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Viva'))
   async getVivaDetails(@Param('id') studentId: string): Promise<Viva | null> {
     this.logger.debug(
       `Fetching viva details for student with ID: ${studentId}`,

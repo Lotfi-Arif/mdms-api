@@ -4,7 +4,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
-  UseGuards,
+  // UseGuards,
   Param,
   Get,
 } from '@nestjs/common';
@@ -12,7 +12,7 @@ import { AuthService } from './auth.service';
 import { Token } from './models/token.model';
 import { CreateUserDto, LoginDto, RefreshTokenDto } from './dto';
 import { User } from '@prisma/client';
-import { JwtAuthGuard } from './jwt-auth.guard';
+// import { JwtAuthGuard } from './jwt-auth.guard';
 import { GetUser } from 'utils/decorators/get-user.decorator';
 
 @Controller('auth')
@@ -31,10 +31,10 @@ export class AuthController {
     return this.authService.login(loginDto.email, loginDto.password);
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Get('me')
-  async getCurrentUser(@GetUser() user: User) {
-    return this.authService.fetchUser(user.id);
+  async getCurrentUser(@GetUser() user) {
+    return this.authService.fetchUser(user.email);
   }
 
   @Post('refresh-token')
@@ -43,7 +43,7 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto.refreshToken);
   }
 
-  @UseGuards(JwtAuthGuard)
+  // @UseGuards(JwtAuthGuard)
   @Post('validate')
   @HttpCode(HttpStatus.OK)
   async validateUser(@Param('id') id: string): Promise<User> {
@@ -51,8 +51,8 @@ export class AuthController {
   }
 
   @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  async logout(@Body() userId: string): Promise<void> {
-    return this.authService.logout(userId);
+  async logout(@Body('userId') userId: string) {
+    await this.authService.logout(userId);
+    return { message: 'Logged out successfully' };
   }
 }

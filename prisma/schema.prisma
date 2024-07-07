@@ -46,17 +46,25 @@ model Lecturer {
 
 // Student-specific data
 model Student {
-  id           String       @id @default(cuid())
-  userId       String       @unique
-  user         User         @relation(fields: [userId], references: [id])
-  matricNumber String       @unique
-  submissions  Submission[]
-  supervisor   Supervisor?  @relation(fields: [supervisorId], references: [id])
-  project      Project?
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  Viva         Viva?
-  supervisorId String?
+  id                    String       @id @default(cuid())
+  userId                String       @unique
+  user                  User         @relation(fields: [userId], references: [id])
+  matricNumber          String       @unique
+  submissions           Submission[]
+  supervisorId          String?
+  supervisor            Supervisor?  @relation(fields: [supervisorId], references: [id])
+  project               Project?
+  viva                  Viva?
+  progress1Date         DateTime?
+  progress1Completed    Boolean?
+  progress2Date         DateTime?
+  progress2Completed    Boolean?
+  finalReportDate       DateTime?
+  finalReportCompleted  Boolean?
+  presentationDate      DateTime?
+  presentationCompleted Boolean?
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
 }
 
 // Supervisor-specific data

@@ -7,7 +7,7 @@ import {
   Patch,
   Delete,
   Logger,
-  UseGuards,
+  // UseGuards,
 } from '@nestjs/common';
 import { ExaminersService } from './examiners.service';
 import {
@@ -18,20 +18,20 @@ import {
   Project,
   Prisma,
 } from '@prisma/client';
-import { PoliciesGuard } from 'src/casl/policies.guard';
-import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
-import { CheckPolicies } from 'src/casl/check-policies.decorator';
-import { AppAbility } from 'src/casl/casl-ability.factory';
+// import { PoliciesGuard } from 'src/casl/policies.guard';
+// import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
+// import { CheckPolicies } from 'src/casl/check-policies.decorator';
+// import { AppAbility } from 'src/casl/casl-ability.factory';
 
 @Controller('examiners')
-@UseGuards(JwtAuthGuard, PoliciesGuard)
+// @UseGuards(JwtAuthGuard, PoliciesGuard)
 export class ExaminersController {
   private readonly logger = new Logger(ExaminersController.name);
 
   constructor(private readonly examinersService: ExaminersService) {}
 
   @Get()
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Examiner'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Examiner'))
   async findAllExaminers(): Promise<Examiner[]> {
     this.logger.log('Fetching all examiners');
     const examiners = await this.examinersService.findAllExaminers();
@@ -41,7 +41,7 @@ export class ExaminersController {
   }
 
   @Get(':id')
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Examiner'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Examiner'))
   async findOneExaminer(@Param('id') id: string): Promise<Examiner | null> {
     this.logger.log(`Fetching examiner with id: ${id}`);
     const examiner = await this.examinersService.findOneExaminer(id);
@@ -51,7 +51,7 @@ export class ExaminersController {
   }
 
   @Patch(':id')
-  @CheckPolicies((ability: AppAbility) => ability.can('update', 'Examiner'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('update', 'Examiner'))
   async updateExaminer(
     @Param('id') id: string,
     @Body() examinerData: Prisma.ExaminerUpdateInput,
@@ -64,7 +64,7 @@ export class ExaminersController {
   }
 
   @Delete(':id')
-  @CheckPolicies((ability: AppAbility) => ability.can('delete', 'Examiner'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('delete', 'Examiner'))
   async removeExaminer(@Param('id') id: string): Promise<{
     message: string;
     examiner: Examiner;
@@ -77,7 +77,7 @@ export class ExaminersController {
   }
 
   @Post(':id/accept-nomination')
-  @CheckPolicies((ability: AppAbility) => ability.can('update', 'Nomination'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('update', 'Nomination'))
   async acceptNomination(
     @Param('id') nominationId: string,
     @Body() vivaData: Prisma.VivaCreateInput,
@@ -93,7 +93,7 @@ export class ExaminersController {
   }
 
   @Post(':id/reject-nomination')
-  @CheckPolicies((ability: AppAbility) => ability.can('update', 'Nomination'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('update', 'Nomination'))
   async rejectNomination(
     @Param('id') nominationId: string,
   ): Promise<Nomination> {
@@ -105,7 +105,7 @@ export class ExaminersController {
   }
 
   @Get(':id/nominations')
-  @CheckPolicies((ability: AppAbility) => ability.can('read', 'Nomination'))
+  // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Nomination'))
   async getNominationRequests(
     @Param('id') examinerId: string,
   ): Promise<Nomination[]> {
@@ -118,10 +118,10 @@ export class ExaminersController {
   }
 
   @Post(':id/evaluate')
-  @CheckPolicies(
-    (ability: AppAbility) =>
-      ability.can('update', 'Viva') && ability.can('update', 'Examiner'),
-  )
+  // @CheckPolicies(
+  //   (ability: AppAbility) =>
+  //     ability.can('update', 'Viva') && ability.can('update', 'Examiner'),
+  // )
   async evaluateStudent(
     @Param('id') vivaId: string,
     @Body('evaluation') evaluation: string,
