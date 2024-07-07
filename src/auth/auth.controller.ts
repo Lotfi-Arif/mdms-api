@@ -49,4 +49,10 @@ export class AuthController {
   async validateUser(@Param('id') id: string): Promise<User> {
     return this.authService.validateUser(id);
   }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Body() userId: string): Promise<void> {
+    return this.authService.logout(userId);
+  }
 }

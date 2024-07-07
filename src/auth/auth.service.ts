@@ -6,6 +6,7 @@ import {
   BadRequestException,
   ConflictException,
   UnauthorizedException,
+  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
@@ -15,6 +16,8 @@ import { PrismaService } from 'nestjs-prisma';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
@@ -29,11 +32,13 @@ export class AuthService {
     role: string;
     universityId: string;
   }): Promise<Token> {
+    this.logger.debug(`Creating user with email: ${payload.email}`);
     const hashedPassword = await this.passwordService.hashPassword(
       payload.password,
     );
 
     try {
+      this.logger.debug(`Creating user with email: ${payload.email}`);
       const user = await this.prisma.user.create({
         data: {
           firstName: payload.name,
@@ -48,13 +53,19 @@ export class AuthService {
         },
       });
 
+      this.logger.debug(`User created with ID: ${user.id}`);
+
       const tokens = await this.generateTokens(user.id);
+
+      this.logger.debug(`Generated tokens for user with ID: ${user.id}`);
 
       // Store refresh token in the database
       await this.prisma.user.update({
         where: { id: user.id },
         data: { refreshToken: tokens.refreshToken },
       });
+
+      this.logger.debug(`Stored refresh token for user with ID: ${user.id}`);
 
       return tokens;
     } catch (e) {
@@ -69,9 +80,14 @@ export class AuthService {
   }
 
   async login(email: string, password: string): Promise<Token> {
+    this.logger.debug(`Logging in user with email: ${email}`);
+
     const user = await this.prisma.user.findUnique({ where: { email } });
 
+    this.logger.debug(`Found user with ID: ${user?.id}`);
+
     if (!user) {
+      this.logger.debug(`No user found for email: ${email}`);
       throw new NotFoundException(`No user found for email: ${email}`);
     }
 
@@ -80,11 +96,16 @@ export class AuthService {
       user.password,
     );
 
+    this.logger.debug(`Password valid: ${passwordValid}`);
+
     if (!passwordValid) {
+      this.logger.debug(`Invalid password`);
       throw new BadRequestException('Invalid password');
     }
 
     const tokens = await this.generateTokens(user.id);
+
+    this.logger.debug(`Generated tokens for user with ID: ${user.id}`);
 
     // Store refresh token in the database
     await this.prisma.user.update({
@@ -92,28 +113,40 @@ export class AuthService {
       data: { refreshToken: tokens.refreshToken },
     });
 
+    this.logger.debug(`Stored refresh token for user with ID: ${user.id}`);
+
     return tokens;
   }
 
   async refreshToken(refreshToken: string): Promise<Token> {
     try {
+      this.logger.debug(`Refreshing token`);
       const { userId } = this.jwtService.verify(refreshToken, {
         secret: this.configService.get('JWT_REFRESH_SECRET'),
       });
 
+      this.logger.debug(`User ID from refresh token: ${userId}`);
+
       const user = await this.prisma.user.findUnique({ where: { id: userId } });
 
+      this.logger.debug(`Found user with ID: ${user?.id}`);
+
       if (!user || user.refreshToken !== refreshToken) {
+        this.logger.debug(`Invalid refresh token`);
         throw new UnauthorizedException();
       }
 
       const tokens = await this.generateTokens(user.id);
+
+      this.logger.debug(`Generated tokens for user with ID: ${user.id}`);
 
       // Store new refresh token in the database
       await this.prisma.user.update({
         where: { id: user.id },
         data: { refreshToken: tokens.refreshToken },
       });
+
+      this.logger.debug(`Stored refresh token for user with ID: ${user.id}`);
 
       return tokens;
     } catch (e) {
@@ -158,5 +191,13 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async logout(userId: string): Promise<void> {
+    this.logger.debug(`Logging out user with ID: ${userId}`);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { refreshToken: null },
+    });
   }
 }

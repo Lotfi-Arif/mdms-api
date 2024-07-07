@@ -126,8 +126,101 @@ async function main() {
       users.map((u) => u.email),
     );
 
-    // The rest of your script remains unchanged
-    // ... (submissions, nominations, vivas, projects creation)
+    // Create submissions (only for students)
+    const submissions = await Promise.all(
+      students.map((student) =>
+        prisma.submission.create({
+          data: {
+            title: `Submission by ${student.firstName} ${student.lastName}`,
+            content: `Content of submission by ${student.firstName} ${student.lastName}`,
+            student: { connect: { userId: student.id } },
+          },
+        }),
+      ),
+    );
+
+    console.log(
+      'Submissions created:',
+      submissions.map((s) => s.title),
+    );
+
+    // Create nominations (only for lecturers)
+    const lecturerRecords = await prisma.lecturer.findMany();
+    const nominations = await Promise.all(
+      lecturerRecords.map((lecturer) =>
+        prisma.nomination.create({
+          data: {
+            details: `Nomination for ${lecturer.staffNumber}`,
+            lecturer: { connect: { id: lecturer.id } },
+          },
+        }),
+      ),
+    );
+
+    console.log('Nominations created:', nominations.length);
+
+    // Accept some nominations randomly
+    await Promise.all(
+      nominations.map((nomination) =>
+        Math.random() > 0.5
+          ? prisma.nomination.update({
+              where: { id: nomination.id },
+              data: { accepted: true },
+            })
+          : Promise.resolve(),
+      ),
+    );
+
+    console.log('Some nominations randomly accepted');
+
+    // Create vivas (only for students)
+    const vivas = await Promise.all(
+      students.map((student) =>
+        prisma.viva.create({
+          data: {
+            topic: `Viva for ${student.firstName} ${student.lastName}`,
+            student: { connect: { userId: student.id } },
+            vivaDate: new Date(
+              Date.now() + Math.random() * 30 * 24 * 60 * 60 * 1000,
+            ), // Random date within next 30 days
+          },
+        }),
+      ),
+    );
+
+    console.log('Vivas created:', vivas.length);
+
+    // Assign examiners to vivas
+    const examiners = await prisma.examiner.findMany();
+    await Promise.all(
+      vivas.map((viva) =>
+        prisma.viva.update({
+          where: { id: viva.id },
+          data: {
+            examiners: {
+              connect: examiners.slice(0, 2).map((e) => ({ id: e.id })), // Assign first two examiners to each viva
+            },
+          },
+        }),
+      ),
+    );
+
+    console.log('Examiners assigned to vivas');
+
+    // Create projects (only for students)
+    await Promise.all(
+      students.map((student, index) =>
+        prisma.project.create({
+          data: {
+            projectType: index % 2 === 0 ? 'Development' : 'Research',
+            subjectArea: index % 2 === 0 ? 'SECR' : 'SECJ',
+            title: `Project by ${student.firstName} ${student.lastName}`,
+            student: { connect: { userId: student.id } },
+            viva: { connect: { id: vivas[index].id } },
+          },
+        }),
+      ),
+    );
 
     console.log('Seeding completed successfully.');
   } catch (error) {
