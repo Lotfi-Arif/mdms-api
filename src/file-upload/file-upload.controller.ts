@@ -3,6 +3,7 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
   Param,
   Get,
   Res,
@@ -24,10 +25,7 @@ export class FileUploadController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const { firstName, lastName, matricNumber } = req.body;
-          const ext = path.extname(file.originalname);
-          const filename = `${firstName}_${lastName}_${matricNumber}${ext}`;
-          cb(null, filename);
+          cb(null, file.originalname);
         },
       }),
       fileFilter: (req, file, cb) => {
@@ -39,8 +37,6 @@ export class FileUploadController {
       },
     }),
   )
-  @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
   async uploadFileAndCreateSubmission(
     @UploadedFile() file: Express.Multer.File,
     @Body('title') title: string,
@@ -61,10 +57,7 @@ export class FileUploadController {
       storage: diskStorage({
         destination: './uploads',
         filename: (req, file, cb) => {
-          const { firstName, lastName, matricNumber } = req.body;
-          const ext = path.extname(file.originalname);
-          const filename = `${firstName}_${lastName}_${matricNumber}_${Date.now()}${ext}`;
-          cb(null, filename);
+          cb(null, file.originalname);
         },
       }),
       fileFilter: (req, file, cb) => {
@@ -77,7 +70,7 @@ export class FileUploadController {
     }),
   )
   async uploadMultipleFiles(
-    @UploadedFile() files: Express.Multer.File[],
+    @UploadedFiles() files: Express.Multer.File[],
     @Body('title') title: string,
     @Body('submissionType') submissionType: string,
     @Body('studentEmail') studentEmail: string,
