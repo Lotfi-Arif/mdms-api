@@ -160,34 +160,32 @@ async function main() {
     // Create submissions (only for students)
     const submissions = await Promise.all(
       students.flatMap((student) =>
-        ['proposal', 'progress1', 'progress2', 'final'].map(
-          async (submissionType) => {
-            const fileName = `${student.firstName}_${student.lastName}_${student.student?.matricNumber}_${submissionType}.pdf`;
-            const { path: filePath } = await createDummyFile(
-              student.firstName,
-              student.lastName,
-              student.student?.matricNumber,
-              submissionType,
-            );
+        ['proposal'].map(async (submissionType) => {
+          const fileName = `${student.firstName}_${student.lastName}_${student.student?.matricNumber}_${submissionType}.pdf`;
+          const { path: filePath } = await createDummyFile(
+            student.firstName,
+            student.lastName,
+            student.student?.matricNumber,
+            submissionType,
+          );
 
-            const file = await prisma.file.create({
-              data: {
-                filename: fileName,
-                mimetype: 'application/pdf',
-                path: filePath,
-              },
-            });
+          const file = await prisma.file.create({
+            data: {
+              filename: fileName,
+              mimetype: 'application/pdf',
+              path: filePath,
+            },
+          });
 
-            return prisma.submission.create({
-              data: {
-                title: `${submissionType.charAt(0).toUpperCase() + submissionType.slice(1)} Submission by ${student.firstName} ${student.lastName}`,
-                content: submissionType,
-                student: { connect: { userId: student.id } },
-                file: { connect: { id: file.id } },
-              },
-            });
-          },
-        ),
+          return prisma.submission.create({
+            data: {
+              title: `${submissionType.charAt(0).toUpperCase() + submissionType.slice(1)} Submission by ${student.firstName} ${student.lastName}`,
+              content: submissionType,
+              student: { connect: { userId: student.id } },
+              file: { connect: { id: file.id } },
+            },
+          });
+        }),
       ),
     );
 

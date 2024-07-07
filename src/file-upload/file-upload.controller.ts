@@ -3,7 +3,6 @@ import {
   Post,
   UseInterceptors,
   UploadedFile,
-  UploadedFiles,
   Param,
   Get,
   Res,
@@ -40,23 +39,20 @@ export class FileUploadController {
       },
     }),
   )
-  async uploadSingleFile(
-    @UploadedFile() file,
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadFileAndCreateSubmission(
+    @UploadedFile() file: Express.Multer.File,
     @Body('title') title: string,
-    @Body('studentId') studentId: string,
     @Body('submissionType') submissionType: string,
+    @Body('studentEmail') studentEmail: string,
   ) {
-    const { file: savedFile, submission } =
-      await this.fileUploadService.saveFileDataAndCreateSubmission(
-        file.filename,
-        file.mimetype,
-        file.path,
-        title,
-        studentId,
-        submissionType,
-      );
-
-    return { fileId: savedFile.id, submissionId: submission.id };
+    return this.fileUploadService.saveFileAndCreateSubmission(
+      file,
+      title,
+      submissionType,
+      studentEmail,
+    );
   }
 
   @Post('uploads')
@@ -81,23 +77,21 @@ export class FileUploadController {
     }),
   )
   async uploadMultipleFiles(
-    @UploadedFiles() files,
+    @UploadedFile() files: Express.Multer.File[],
     @Body('title') title: string,
-    @Body('studentId') studentId: string,
     @Body('submissionType') submissionType: string,
+    @Body('studentEmail') studentEmail: string,
   ) {
     const responses = [];
     for (const file of files) {
-      const { file: savedFile, submission } =
-        await this.fileUploadService.saveFileDataAndCreateSubmission(
-          file.filename,
-          file.mimetype,
-          file.path,
+      const { message, submission } =
+        await this.fileUploadService.saveFileAndCreateSubmission(
+          file,
           title,
-          studentId,
           submissionType,
+          studentEmail,
         );
-      responses.push({ fileId: savedFile.id, submissionId: submission.id });
+      responses.push({ message, submission });
     }
     return responses;
   }

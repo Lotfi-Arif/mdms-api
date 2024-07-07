@@ -49,11 +49,12 @@ export class StudentsController {
     return students;
   }
 
-  @Get(':id/progress')
+  @Get(':studentEmail/progress')
   // @CheckPolicies((ability: AppAbility) => ability.can('read', 'Student'))
-  async getStudentProgress(@Param('id') studentId: string) {
-    this.logger.debug(`Fetching progress for student with ID: ${studentId}`);
-    const progress = await this.studentsService.getStudentProgress(studentId);
+  async getStudentProgress(@Param('studentEmail') studentEmail: string) {
+    this.logger.debug(`Fetching progress for student with ID: ${studentEmail}`);
+    const progress =
+      await this.studentsService.getStudentProgress(studentEmail);
     this.logger.debug(`Fetched progress: ${JSON.stringify(progress)}`);
 
     return {
